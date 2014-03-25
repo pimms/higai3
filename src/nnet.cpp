@@ -33,15 +33,16 @@ NeuralNetwork::~NeuralNetwork()
 
 vector<double> NeuralNetwork::Calculate(const vector<double> &input)
 {
-	vector<double> finalOutput;
+	vector<double> output;
+	int size = _layers.size();
 
-	for (int i=0; i<_layers.size()-1; i++) {
-		vector<double> output;
-		
-		_layers[i]->GetOutput(output);
-		_layers[i+1]->SetInput(output);
+	_layers[0]->SetInput(input);
+	
+	for (int i=1; i<size; i++) {
+		_layers[i-1]->GetOutput(output);
+		_layers[i]->SetInput(output);
 	}
 
-	_layers[_layers.size()-1]->GetOutput(finalOutput);
-	return finalOutput;
+	_layers[size-1]->GetOutput(output);
+	return output;
 }

@@ -6,7 +6,7 @@ Neuron::Neuron(Layer *previousLayer)
 {
 	if (previousLayer) {
 		_input.resize(previousLayer->GetNodeCount());
-		_weights.resize(previousLayer->GetNodeCount());
+		_weights.resize(previousLayer->GetNodeCount(), 1.0);
 	} else {
 		// The node is an input-neuron or a bias. It can only take 
 		// one input, and it's weight is always 1.0.
