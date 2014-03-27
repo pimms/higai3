@@ -18,6 +18,8 @@ public:
 
 	virtual double GetOutput() const;
 
+	void SetWeights(const vector<double> &weights);
+
 private:
 	double Activation(double netInput) const;
 

@@ -41,6 +41,14 @@ double Neuron::GetOutput() const
 	return Activation(netInput);
 }
 
+void Neuron::SetWeights(const vector<double> &weights)
+{
+	if (weights.size() != _weights.size()) 
+		throw runtime_error("Neuron::SetWeights() - invalid input size");
+
+	_weights = weights;
+}
+
 
 /* Private Methods */
 

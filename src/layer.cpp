@@ -3,7 +3,8 @@
 
 
 Layer::Layer(Layer *prevLayer, int realNodes, int biasNodes)
-	: 	_nextLayer(NULL)
+	: 	_prevLayer(prevLayer),
+		_nextLayer(NULL)
 {
 	if (realNodes <= 0) 
 		throw runtime_error("A layer requires at least 1 real node");
@@ -11,7 +12,7 @@ Layer::Layer(Layer *prevLayer, int realNodes, int biasNodes)
 		throw runtime_error("Cannot create negative # of bias nodes");
 
 	for (int i=0; i<realNodes; i++) {
-		Neuron *neuron = new Neuron(prevLayer);
+		Neuron *neuron = new Neuron(_prevLayer);
 		_neurons.push_back(neuron);
 	}
 
@@ -27,6 +28,22 @@ void Layer::SetNextLayer(Layer *next)
 }
 
 
+void Layer::SetWeights(vector< vector<double> > weight) 
+{
+	// Assert valid input
+	// TODO: More descriptive error outputs
+	if (weight.size() != _neurons.size())
+		throw runtime_error("[SetWeights] Invalid number of input nodes");
+	for (int i=0; i<weight.size(); i++)
+		if (weight[i].size() != _prevLayer->GetNodeCount())
+			throw runtime_error("[SetWeights] Invalid number of weights");
+
+	for (int i=0; i<weight.size(); i++) {
+		_neurons[i]->SetWeights(weight[i]);
+	}
+}
+
+
 Layer::~Layer() 
 {
 	for (int i=0; i<_neurons.size(); i++) 
@@ -39,6 +56,11 @@ Layer::~Layer()
 int Layer::GetNodeCount() const
 {
 	return _neurons.size() + _biases.size();
+}
+
+int Layer::GetRealNodeCount() const
+{
+	return _neurons.size();
 }
 
 
