@@ -74,9 +74,17 @@ void Layer::GetOutput(vector<double>& output) const
 
 void Layer::SetInput(const vector<double>& input)
 {
-	for (int i=0; i<_neurons.size(); i++) {
-		for (int j=0; j<input.size(); j++) {
-			_neurons[i]->SetInput(j, input[j]);
+	if (_prevLayer) {
+		// Set the input for ALL nodes
+		for (int i=0; i<_neurons.size(); i++) {
+			for (int j=0; j<input.size(); j++) {
+				_neurons[i]->SetInput(j, input[j]);
+			}
+		}
+	} else {
+		// Map each input to each node
+		for (int i=0; i<_neurons.size(); i++) {
+			_neurons[i]->SetInput(0, input[i]);
 		}
 	}
 }

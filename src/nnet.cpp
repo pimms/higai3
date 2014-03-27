@@ -31,6 +31,16 @@ NeuralNetwork::~NeuralNetwork()
 }
 
 
+void NeuralNetwork::SetLayerWeights(int layer, 
+									vector< vector<double> > &weights)
+{
+	if (layer <= 0 || layer >= _layers.size())
+		throw runtime_error("SetLayerWeights: invalid layer index");
+
+	_layers[layer]->SetWeights(weights);
+}
+
+
 vector<double> NeuralNetwork::Calculate(const vector<double> &input)
 {
 	vector<double> output;
