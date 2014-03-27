@@ -1,0 +1,20 @@
+# THIS IS NOT A VALID FILE. THE FORMAT IS BINARY. NUMBERS SPECIFIED IN 
+# "[]" ARE 4 BYTE INTEGERS. NUMBERS IN "{}" ARE 8 BYTE DOUBLES.
+
+
+# First, we define the topology. The format is:
+# 	[number of layers] [layer0-real-nodes] [layer0-bias-nodes] ... [layerN...]
+# This example network has two layers. The input layer has one input node
+# and one bias node. The output layer has two real nodes and no
+# bias nodes.
+[2] [1][1] [2][0]
+
+# Then the weights for LAYER1-LAYERN are defined sequentially. 
+# The format is:
+# 	{real-node0}..{real-nodeN}{bias-node0}..{bias-nodeN}
+# The input layer has no incoming connections and therefore no weights. The output
+# layer has two nodes in the previous layer, so all nodes must define
+# two weights each. 
+{0.1} {0.3}
+{0.5} {1.3}
+
