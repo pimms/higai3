@@ -14,7 +14,7 @@
 # 	{real-node0}..{real-nodeN}{bias-node0}..{bias-nodeN}
 # The input layer has no incoming connections and therefore no weights. The output
 # layer has two nodes in the previous layer, so all nodes must define
-# two weights each. 
+# two weights each. The receiving layer is responsible for defining the weights.
 {0.1} {0.3}
 {0.5} {1.3}
 
