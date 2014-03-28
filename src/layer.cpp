@@ -66,6 +66,8 @@ int Layer::GetRealNodeCount() const
 
 void Layer::GetOutput(vector<double>& output) const
 {
+	output.clear();
+
 	for (int i=0; i<_neurons.size(); i++) 
 		output.push_back(_neurons[i]->GetOutput());
 	for (int i=0; i<_biases.size(); i++) 
