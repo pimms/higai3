@@ -4,8 +4,6 @@
 
 double RandRange(double min, double max) 
 {
-	srand((unsigned)time(0));
-
 	double r = (double)rand();
 	r /= (double)RAND_MAX;
 

@@ -1,10 +1,12 @@
 #include "nnet.h"
 #include "netparser.h"
+#include <stdlib.h>
 
 
 int main(int argc, char *argv[]) 
 {
 	try {
+		srand((unsigned)time(0));
 		NetworkParser parser("smallnet.nnet");
 		NeuralNetwork *nn = parser.Parse();
 
