@@ -20,6 +20,8 @@ public:
 
 	void SetWeights(const vector<double> &weights);
 
+	vector<double> GetWeights() const;
+
 private:
 	double Activation(double netInput) const;
 

@@ -20,6 +20,8 @@ public:
 
 	vector<double> Calculate(const vector<double>& input);
 
+	void PrintInformation() const;
+
 private:
 	vector<Layer*> _layers;
 };

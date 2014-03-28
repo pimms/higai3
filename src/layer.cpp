@@ -90,3 +90,29 @@ void Layer::SetInput(const vector<double>& input)
 	}
 }
 
+
+void Layer::PrintInformation() const
+{
+	LayerWeights lw;
+	int wcount = 0;
+
+	printf("+++++|");
+
+	for (int i=0; i<_neurons.size(); i++) {
+		printf(" Neuron %4i |", i);
+		lw.push_back(_neurons[i]->GetWeights());
+	}
+
+	wcount = lw[0].size();
+	printf("\n");
+
+	for (int i=0; i<wcount; i++) {
+		printf("W%3d |", i);
+
+		for (int j=0; j<lw.size(); j++) {
+			printf(" %11g |", lw[j][i]);
+		}
+		
+		printf("\n");
+	}
+}

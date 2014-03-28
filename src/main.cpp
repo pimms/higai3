@@ -18,6 +18,8 @@ int main(int argc, char *argv[])
 			printf("[Neuron %i]:  %f\n", i, output[i]);
 		}
 
+		nn->PrintInformation();
+
 	} catch (runtime_error err) {
 		printf("Exception caught:\n\t%s\n", err.what());
 		return 1;

@@ -49,6 +49,11 @@ void Neuron::SetWeights(const vector<double> &weights)
 	_weights = weights;
 }
 
+vector<double> Neuron::GetWeights() const
+{
+	return _weights;
+}
+
 
 /* Private Methods */
 

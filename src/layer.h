@@ -37,6 +37,8 @@ public:
 	
 	void GetOutput(vector<double>& output) const;
 	void SetInput(const vector<double> &input);
+
+	void PrintInformation() const;
 	
 private:
 	Layer *_prevLayer;

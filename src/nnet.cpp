@@ -56,3 +56,14 @@ vector<double> NeuralNetwork::Calculate(const vector<double> &input)
 	_layers[size-1]->GetOutput(output);
 	return output;
 }
+
+void NeuralNetwork::PrintInformation() const
+{
+	printf("--------- Network Information ---------\n");
+	printf("Layers:       %lu\n", _layers.size());
+
+	for (int i=1; i<_layers.size(); i++) {
+		printf("\nLayer %i\n", i);
+		_layers[i]->PrintInformation();
+	}
+}
