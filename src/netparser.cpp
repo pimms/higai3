@@ -1,5 +1,7 @@
 #include "netparser.h"
 #include "nnet.h"
+#include "util.h"
+#include <cstdlib>
 
 
 NetworkParser::NetworkParser(string filename)
@@ -15,24 +17,28 @@ NeuralNetwork* NetworkParser::Parse()
 	if (!OpenFileHandle(file, false)) 
 		return NULL;
 	
-	NeuralNetwork *network = NULL;
 	int layerCount = 0;
+	NeuralNetwork *network = NULL;
 	Topology topology;
-	vector< vector< vector<double> > > weights;
+	vector<LayerWeights> weights;
+	string weightType;
 
 	// Read the topology
 	file >> layerCount;
 	topology = ReadTopology(file, layerCount);
 
-	// Read the weights 
-	for (int i=1; i<topology.size(); i++) {
-		int prevCount = topology[i-1].first + topology[i-1].second;
-		int curCount  = topology[i].first + topology[i].second;
-
-		vector< vector<double> > layerWeight;
-		layerWeight = ReadWeights(file, prevCount, curCount);
-		weights.push_back(layerWeight);
+	// Read the type of weights (random or defined)
+	file >> weightType;
+	if (weightType == "RAND") {
+		RandomizeAllWeights(weights, topology, file);
+	} else if (weightType == "PREDEF") {
+		ReadAllWeights(weights, topology, file);
+	} else {
+		throw runtime_error("[NetworkParser::Parse()]"
+							" Invalid weight type: " + weightType);
+		return NULL;
 	}
+
 
 	// Create the network and assign the weights
 	network = new NeuralNetwork(topology);
@@ -85,17 +91,72 @@ Topology NetworkParser::ReadTopology(fstream &file, int layers)
 	return topology;
 }
 
-vector< vector<double> > NetworkParser::ReadWeights(fstream &file, 
-												 	int prevCount,
-													int curCount)
+void NetworkParser::ReadAllWeights(vector<LayerWeights> &weights,
+								   Topology &topology,
+								   fstream &file)
 {
-	vector< vector<double> > weights;
+	weights.clear();
+
+	// Read the weights 
+	for (int i=1; i<topology.size(); i++) {
+		int prevCount = topology[i-1].first + topology[i-1].second;
+		int curCount  = topology[i].first + topology[i].second;
+
+		LayerWeights layerWeight;
+		layerWeight = ReadLayerWeights(file, prevCount, curCount);
+		weights.push_back(layerWeight);
+	}
+}
+
+void NetworkParser::RandomizeAllWeights(vector<LayerWeights> &weights,
+										Topology &topology,
+										fstream &file)
+{
+	weights.clear();
+
+	double min = 1.0;
+	double max = 0.0;
+	file >> min >> max;
+
+	if (min > max) 
+		throw runtime_error("RandomizeWeights: invalid values");
+
+	for (int i=1; i<topology.size(); i++) {
+		int prevCount = topology[i-1].first + topology[i-1].second;
+		int curCount  = topology[i].first + topology[i].second;
+
+		LayerWeights layerWeight;
+		layerWeight = RandomizeLayerWeights(min, max, prevCount, curCount);
+		weights.push_back(layerWeight);
+	}
+}
+
+LayerWeights NetworkParser::ReadLayerWeights(fstream &file, 
+										int prevCount, int curCount)
+{
+	LayerWeights weights;
 	weights.resize(curCount);
 
 	for (int i=0; i<curCount; i++) {
 		for (int j=0; j<prevCount; j++) {
 			double d;
 			file >> d;
+			weights[i].push_back(d);
+		}
+	}
+
+	return weights;
+}
+
+LayerWeights NetworkParser::RandomizeLayerWeights(double min, double max,
+												  int prev, int cur)
+{
+	LayerWeights weights;
+	weights.resize(cur);	
+
+	for (int i=0; i<cur; i++) {
+		for (int j=0; j<prev; j++) {
+			double d = RandRange(min, max);
 			weights[i].push_back(d);
 		}
 	}

@@ -28,8 +28,28 @@ private:
 	bool OpenFileHandle(fstream &file, bool write);
 
 	Topology ReadTopology(fstream &file, int layers);
-	vector< vector<double> > ReadWeights(fstream &file, 
-										 int prevCount, int curCount);
+
+	/* Read all weights according to the topology into "weights".
+	 */
+	void ReadAllWeights(vector<LayerWeights> &weights, 
+						Topology &topology, 
+						fstream &file);
+
+	/* Randomize the weights according to the topology
+	 */
+	void RandomizeAllWeights(vector<LayerWeights> &weights,
+							 Topology &topology,
+							 fstream &file);
+
+	/* Read the weights of a single layer
+	 */
+	LayerWeights ReadLayerWeights(fstream &file, int prev, int cur);
+	
+	/* Randomize the weights of a single layer
+	 */
+	LayerWeights RandomizeLayerWeights(double min, double max, 
+									   int prevCount, int curCount);
+	
 		
 	string _filename;
 };

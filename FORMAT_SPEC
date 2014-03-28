@@ -10,12 +10,31 @@
 # on anything, but don't be stupid about it. 
 [2] [2][1] [2][0]
 
+# There are two different ways of generating the weights.
+# - Randomly
+# - Predefined
+#
+# The next word will define which type is used. Either of the following
+# two is ok:
+# 	"RAND"		The weights will be randomly generated. 
+# 	"PREDEF"	The weights must be defined as described below.
+
+
+# RANDOM FORMAT
+# The minimum and maximum weight must be defined following the
+# "RAND"-symbol. In this example, all weights will be given a weight
+# between -1 and 1, inclusive.
+RAND
+-1.0 1.0
+
+# PREDEFINED FORMAT
 # Then the weights for LAYER1-LAYERN are defined sequentially. 
 # The format is:
 # 	{real-node0}..{real-nodeN}{bias-node0}..{bias-nodeN}
 # The input layer has no incoming connections and therefore no weights. The output
 # layer has two nodes in the previous layer, so all nodes must define
 # two weights each. The receiving layer is responsible for defining the weights.
+PREDEF
 {0.7} {0.1} {0.3}
 {9.3} {0.5} {1.3}
 

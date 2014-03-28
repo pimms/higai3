@@ -20,3 +20,10 @@ using std::runtime_error;
  * nodes.
  */
 typedef vector< pair<int,int> > Topology;
+
+/* A layer's weight is defined by a two dimensional vector. The
+ * vector is of size [MxN], where M is the number of nodes in the
+ * current layer, and N is the number of incoming connections for
+ * the nodes in the layer.
+ */
+typedef vector< vector<double> > LayerWeights;
