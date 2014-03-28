@@ -31,7 +31,6 @@ void Layer::SetNextLayer(Layer *next)
 void Layer::SetWeights(vector< vector<double> > weight) 
 {
 	// Assert valid input
-	// TODO: More descriptive error outputs
 	if (weight.size() != _neurons.size())
 		throw runtime_error("[SetWeights] Invalid number of input nodes");
 	for (int i=0; i<weight.size(); i++)
