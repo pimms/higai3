@@ -18,6 +18,9 @@ public:
 	 */
 	void SetLayerWeights(int layer, vector< vector<double> > &weights);
 
+	int GetLayerCount() const;
+	const Layer* GetLayer(int layerIndex) const;
+
 	vector<double> Propagate(const vector<double>& input);
 
 	void PrintInformation() const;

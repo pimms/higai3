@@ -41,6 +41,21 @@ void NeuralNetwork::SetLayerWeights(int layer,
 }
 
 
+int NeuralNetwork::GetLayerCount() const
+{
+	return _layers.size();
+}
+
+const Layer* NeuralNetwork::GetLayer(int index) const
+{
+	if (index < 0 || index >= _layers.size()) {
+		throw runtime_error("[GetLayer()]: Invalid index, yo");
+	}
+
+	return _layers[index];
+}
+
+
 vector<double> NeuralNetwork::Propagate(const vector<double> &input)
 {
 	vector<double> output;
