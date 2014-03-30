@@ -1,6 +1,8 @@
 #include "neuron.h"
 #include "layer.h"
 
+#include <math.h>
+
 
 Neuron::Neuron(Layer *previousLayer)
 	:	_gain(1.0),
@@ -110,7 +112,7 @@ double Neuron::GetDelta(int index) const
 
 double Neuron::Activation(double netInput) const
 {
-	return netInput;
+	return 1.0 / (1.0 + exp(-netInput));
 }
 
 
