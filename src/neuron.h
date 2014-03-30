@@ -29,6 +29,10 @@ private:
 
 	// The weights of the connections to the PREVIOUS layer.
 	vector<double> _weights;
+
+	double _gain;
+	double _wgain;
+	double _delta;
 };
 
 

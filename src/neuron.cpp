@@ -3,6 +3,9 @@
 
 
 Neuron::Neuron(Layer *previousLayer)
+	:	_gain(1.0),
+		_wgain(1.0),
+		_delta(0.0)
 {
 	if (previousLayer) {
 		_input.resize(previousLayer->GetNodeCount());
