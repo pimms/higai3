@@ -18,7 +18,7 @@ public:
 	 */
 	void SetLayerWeights(int layer, vector< vector<double> > &weights);
 
-	vector<double> Calculate(const vector<double>& input);
+	vector<double> Propagate(const vector<double>& input);
 
 	void PrintInformation() const;
 

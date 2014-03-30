@@ -41,7 +41,7 @@ void NeuralNetwork::SetLayerWeights(int layer,
 }
 
 
-vector<double> NeuralNetwork::Calculate(const vector<double> &input)
+vector<double> NeuralNetwork::Propagate(const vector<double> &input)
 {
 	vector<double> output;
 	int size = _layers.size();
