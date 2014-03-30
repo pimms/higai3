@@ -26,7 +26,7 @@ public:
 
 	double GetGain() const;
 	double GetWeightGain() const;
-	double GetDelta() const;
+	double GetDelta(int index) const;
 
 private:
 	double Activation(double netInput) const;
@@ -38,7 +38,7 @@ private:
 
 	double _gain;
 	double _wgain;
-	double _delta;
+	vector<double> _delta;
 };
 
 
