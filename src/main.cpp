@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 		input.push_back(1.0);
 		input.push_back(1.0);
 
-		output = nn->Calculate(input);
+		output = nn->Propagate(input);
 
 		for (int i=0; i<output.size(); i++) {
 			printf("[Neuron %i]:  %f\n", i, output[i]);
