@@ -33,6 +33,16 @@ void Neuron::SetInput(int nodeIndex, double value)
 	_input[nodeIndex] = value;
 }
 
+double Neuron::GetInput(int nodeIndex) const
+{
+	if (nodeIndex < 0 || nodeIndex >= _input.size()) {
+		throw runtime_error("Invalid node index");
+	}
+
+	return _input[nodeIndex];
+}
+
+
 double Neuron::GetOutput() const
 {
 	double netInput = 0.0;
@@ -42,6 +52,17 @@ double Neuron::GetOutput() const
 	}
 
 	return Activation(netInput);
+}
+
+
+void Neuron::UpdateWeight(int weightIndex, double delta)
+{
+	if (weightIndex < 0 || weightIndex >= _weights.size()) {
+		throw runtime_error("[UpdateWeight()]: Invalid weight index");
+	}
+
+	_weights[weightIndex] += delta;
+	_delta = delta;
 }
 
 void Neuron::SetWeights(const vector<double> &weights)

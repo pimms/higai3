@@ -15,9 +15,11 @@ public:
 	virtual ~Neuron();
 
 	void SetInput(int nodeIndex, double value);
+	double GetInput(int nodeIndex) const;
 
 	virtual double GetOutput() const;
 
+	void UpdateWeight(int weightIndex, double delta);
 	void SetWeights(const vector<double> &weights);
 
 	vector<double> GetWeights() const;
