@@ -58,6 +58,22 @@ vector<double> Neuron::GetWeights() const
 }
 
 
+double Neuron::GetGain() const
+{
+	return _gain;
+}
+
+double Neuron::GetWeightGain() const
+{
+	return _wgain;
+}
+
+double Neuron::GetDelta() const
+{
+	return _delta;
+}
+
+
 /* Private Methods */
 
 double Neuron::Activation(double netInput) const

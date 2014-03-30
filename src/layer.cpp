@@ -62,7 +62,7 @@ int Layer::GetRealNodeCount() const
 	return _neurons.size();
 }
 
-const Neuron* Layer::GetNeuron(int index) const
+Neuron* Layer::GetNeuron(int index) const
 {
 	if (index < 0 || index >= GetNodeCount())
 		throw runtime_error("[GetNeuron()]: Invalid index");

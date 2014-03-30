@@ -22,6 +22,10 @@ public:
 
 	vector<double> GetWeights() const;
 
+	double GetGain() const;
+	double GetWeightGain() const;
+	double GetDelta() const;
+
 private:
 	double Activation(double netInput) const;
 

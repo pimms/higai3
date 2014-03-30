@@ -35,7 +35,7 @@ public:
 	 */
 	int GetRealNodeCount() const;
 
-	const Neuron* GetNeuron(int index) const;
+	Neuron* GetNeuron(int index) const;
 	
 	void GetOutput(vector<double>& output) const;
 	void SetInput(const vector<double> &input);
