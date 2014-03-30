@@ -4,6 +4,7 @@
 
 
 class NeuralNetwork;
+class TrainingData;
 
 
 /* Training Controller
@@ -15,7 +16,7 @@ public:
 	TrainingController();
 	~TrainingController();
 		
-	void Perform();
+	void Perform(const TrainingData &tdata);
 		
 private:
 	/* Perform a single back-propagation step.

@@ -22,7 +22,7 @@ TrainingController::~TrainingController()
 }
 
 
-void TrainingController::Perform()
+void TrainingController::Perform(const TrainingData &tdata)
 {
 	vector< vector<double> > ins;
 	vector< vector<double> > outs;
