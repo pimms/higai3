@@ -3,10 +3,8 @@
 
 TrainingController::TrainingController()
 {
-	
 }
 
 TrainingController::~TrainingController()
 {
-
 }
