@@ -7,7 +7,6 @@
 NetworkParser::NetworkParser(string filename)
 	:	_filename(filename)
 {
-
 }
 
 

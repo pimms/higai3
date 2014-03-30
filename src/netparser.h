@@ -7,7 +7,6 @@ using std::fstream;
 
 class NeuralNetwork;
 
-
 /* Network Parser
  *
  * Class for parsing a Neural Network from file and creating
