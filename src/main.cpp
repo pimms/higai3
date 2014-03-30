@@ -11,7 +11,6 @@ int main(int argc, char *argv[])
 
 		TrainingController ctrl;
 		ctrl.Perform();
-
 	} catch (runtime_error err) {
 		printf("Exception caught:\n\t%s\n", err.what());
 		return 1;
