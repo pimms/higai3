@@ -81,6 +81,11 @@ vector<double> Neuron::GetWeights() const
 }
 
 
+void Neuron::SetWeightGain(double wgain)
+{
+	_wgain = wgain;
+}
+
 double Neuron::GetGain() const
 {
 	return _gain;

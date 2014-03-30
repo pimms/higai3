@@ -24,6 +24,7 @@ public:
 
 	vector<double> GetWeights() const;
 
+	void SetWeightGain(double wgain);
 	double GetGain() const;
 	double GetWeightGain() const;
 	double GetDelta(int index) const;
