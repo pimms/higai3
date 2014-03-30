@@ -4,17 +4,19 @@
 
 Neuron::Neuron(Layer *previousLayer)
 	:	_gain(1.0),
-		_wgain(1.0),
-		_delta(0.0)
+		_wgain(1.0)
 {
 	if (previousLayer) {
-		_input.resize(previousLayer->GetNodeCount());
-		_weights.resize(previousLayer->GetNodeCount(), 1.0);
+		int prevCount = previousLayer->GetNodeCount();
+		_input.resize(prevCount);
+		_weights.resize(prevCount, 1.0);
+		_delta.resize(prevCount);
 	} else {
 		// The node is an input-neuron or a bias. It can only take 
 		// one input, and it's weight is always 1.0.
 		_input.resize(1);
 		_weights.push_back(1.0);
+		_delta.resize(1);
 	}
 }
 
@@ -33,6 +35,16 @@ void Neuron::SetInput(int nodeIndex, double value)
 	_input[nodeIndex] = value;
 }
 
+double Neuron::GetInput(int nodeIndex) const
+{
+	if (nodeIndex < 0 || nodeIndex >= _input.size()) {
+		throw runtime_error("Invalid node index");
+	}
+
+	return _input[nodeIndex];
+}
+
+
 double Neuron::GetOutput() const
 {
 	double netInput = 0.0;
@@ -42,6 +54,17 @@ double Neuron::GetOutput() const
 	}
 
 	return Activation(netInput);
+}
+
+
+void Neuron::UpdateWeight(int weightIndex, double delta)
+{
+	if (weightIndex < 0 || weightIndex >= _weights.size()) {
+		throw runtime_error("[UpdateWeight()]: Invalid weight index");
+	}
+
+	_weights[weightIndex] += delta;
+	_delta[weightIndex] = delta;
 }
 
 void Neuron::SetWeights(const vector<double> &weights)
@@ -68,9 +91,13 @@ double Neuron::GetWeightGain() const
 	return _wgain;
 }
 
-double Neuron::GetDelta() const
+double Neuron::GetDelta(int index) const
 {
-	return _delta;
+	if (index < 0 || index >= _delta.size()) {
+		throw runtime_error("[GetDelta()]: Invalid index");
+	}
+
+	return _delta[index];
 }
 
 
