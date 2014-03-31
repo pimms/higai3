@@ -42,7 +42,6 @@ void TrainingController::Perform(const TrainingData &tdata)
 	int i=0;
 	while (error > 0.01) {
 		error = Train(ins[i%100], outs[i%100]);
-		_nnet->PrintInformation();
 		printf("Error: %g\n", error);
 		i++;
 	}
@@ -57,40 +56,82 @@ double TrainingController::Train(vector<double> input,
 							   vector<double> expOut)
 {
 	_nnet->Propagate(input);
-	double generalError = 0.0;
-	double errorSum = 0.0;
-	double perrorSum = 0.0;
-	
-	for (int i=_nnet->GetLayerCount()-1; i>0; i--) {
-		const Layer *player = _nnet->GetLayer(i-1);
-		const Layer *layer = _nnet->GetLayer(i);
+	double e = 0.0;
 
-		vector<double> out; 
-		layer->GetOutput(out);
+	e = CalculateOutputError(expOut);
+	BackPropagateError();
+	AdjustWeights();
 
-		for (int j=0; j<layer->GetNodeCount(); j++) {
-			Neuron *neuron = layer->GetNeuron(j);
-			double localError = 0.0;
-
-			if (i == _nnet->GetLayerCount()-1) {
-				localError = (expOut[j]-out[j]) * out[j] * (1.0-out[j]);
-				generalError += pow(expOut[j] - out[j], 2.0);
-			} else {
-				localError = out[j] * (1.0-out[j]) * perrorSum;
-			}
-			
-			for (int k=0; k<player->GetNodeCount(); k++) {
-				double in = neuron->GetInput(k);
-				double udelta = /* eta */localError * in;
-				neuron->UpdateWeight(k, udelta);
-				errorSum += neuron->GetWeights()[k] * localError;
-			}
-		}
-
-		perrorSum = errorSum;
-		errorSum = 0.0;
-	}
-
-	return generalError;
+	return e;
 }
 
+double TrainingController::CalculateOutputError(vector<double> expOut)
+{
+	const int layerCount = _nnet->GetLayerCount();
+	const Layer *layer;
+	layer = _nnet->GetLayer(layerCount-1);
+	double sqErr = 0.0;
+
+	for (int i=0; i<layer->GetNodeCount(); i++) {
+		Neuron *neuron = layer->GetNeuron(i);
+
+		double y = neuron->GetOutput();
+		double t = expOut[i];	
+		double e = y * (1.0-y) * (t-y);
+		neuron->SetError(e);
+
+		sqErr += (t-y)*(t-y);
+	}
+
+	return sqErr / layer->GetNodeCount();
+}
+
+void TrainingController::BackPropagateError()
+{
+	const int layerCount = _nnet->GetLayerCount();
+	const Layer *layer, *player;
+	layer = _nnet->GetLayer(layerCount-1);
+
+	// Calcuate the other layers
+	for (int i=layerCount-2; i>=0; i--) {
+		player = _nnet->GetLayer(i);
+		layer = _nnet->GetLayer(i+1);
+		
+		for (int j=0; j<player->GetNodeCount(); j++) {
+			Neuron *neuron = player->GetNeuron(j);
+
+			double y = neuron->GetOutput();
+			double E = 0.0;
+
+			for (int k=0; k<layer->GetNodeCount(); k++) {
+				Neuron *kn = layer->GetNeuron(k);
+				E += kn->GetWeights()[j] * kn->GetError();
+			}
+
+			neuron->SetError(y * (1.0-y) * E);
+		}
+	}
+}
+
+void TrainingController::AdjustWeights()
+{
+	const int layerCount = _nnet->GetLayerCount();
+	const Layer *layer, *player;
+	layer = _nnet->GetLayer(layerCount-1);
+	
+	for (int i=1; i<layerCount; i++) {
+		layer = _nnet->GetLayer(i);
+		player = _nnet->GetLayer(i-1);
+
+		for (int j=0; j<layer->GetNodeCount(); j++) {
+			for (int k=0; k<player->GetNodeCount(); k++) {
+				double y  = player->GetNeuron(k)->GetOutput();
+				double e  = layer->GetNeuron(j)->GetError();
+				//double dw = layer->GetNeuron(j)->GetDelta(k);
+				
+				double delta = y * e /* ETA */;
+				layer->GetNeuron(j)->UpdateWeight(k, delta);
+			}
+		}
+	}
+}

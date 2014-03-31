@@ -83,14 +83,15 @@ vector<double> Neuron::GetWeights() const
 }
 
 
-void Neuron::SetWeightGain(double wgain)
-{
-	_wgain = wgain;
-}
 
 double Neuron::GetGain() const
 {
 	return _gain;
+}
+
+void Neuron::SetWeightGain(double wgain)
+{
+	_wgain = wgain;
 }
 
 double Neuron::GetWeightGain() const
@@ -105,6 +106,16 @@ double Neuron::GetDelta(int index) const
 	}
 
 	return _delta[index];
+}
+
+void Neuron::SetError(double err)
+{
+	_error = err;
+}
+
+double Neuron::GetError() const
+{
+	return _error;
 }
 
 
