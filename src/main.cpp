@@ -1,7 +1,7 @@
 #include "nnet.h"
 #include "netparser.h"
 #include <stdlib.h>
-
+#include <ctime>
 
 int main(int argc, char *argv[]) 
 {
