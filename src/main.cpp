@@ -1,13 +1,10 @@
 #include "nnet.h"
 #include "netparser.h"
 #include <stdlib.h>
-<<<<<<< HEAD
 #include <ctime>
-=======
 #include "controller.h"
 #include "trainingdata.h"
 
->>>>>>> real stupid
 
 int main(int argc, char *argv[]) 
 {
