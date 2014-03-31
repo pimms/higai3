@@ -24,10 +24,12 @@ public:
 
 	vector<double> GetWeights() const;
 
-	void SetWeightGain(double wgain);
 	double GetGain() const;
+	void SetWeightGain(double wgain);
 	double GetWeightGain() const;
 	double GetDelta(int index) const;
+	void SetError(double err);
+	double GetError() const;
 
 private:
 	double Activation(double netInput) const;
@@ -37,6 +39,7 @@ private:
 	// The weights of the connections to the PREVIOUS layer.
 	vector<double> _weights;
 
+	double _error;
 	double _gain;
 	double _wgain;
 	vector<double> _delta;

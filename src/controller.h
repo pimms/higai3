@@ -23,5 +23,9 @@ private:
 	 */
 	double Train(vector<double> input, vector<double> eout);
 	
+	double CalculateOutputError(vector<double> eout);
+	void BackPropagateError();
+	void AdjustWeights();
+	
 	NeuralNetwork *_nnet;
 };
