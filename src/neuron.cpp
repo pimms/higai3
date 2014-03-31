@@ -123,7 +123,10 @@ double Neuron::GetError() const
 
 double Neuron::Activation(double netInput) const
 {
-	return 1.0 / (1.0 + exp(-netInput));
+	double sigmoid = 1.0 / (1.0 + exp(-netInput));
+
+	return sigmoid;
+	return (sigmoid * 2.0) - 1.0;
 }
 
 

@@ -30,7 +30,7 @@ void TrainingController::Perform(const TrainingData &tdata)
 	for (int i=0; i<100; i++) {
 		vector<double> r, o;
 		r.push_back(RandRange(90.0, 100.0));
-		o.push_back((r[0] > 95.0) ? (1.0) : (-1.0));
+		o.push_back((r[0] > 95.0) ? (1.0) : (0.0));
 
 		ins.push_back(r);
 		outs.push_back(o);
@@ -40,7 +40,7 @@ void TrainingController::Perform(const TrainingData &tdata)
 
 	double error = 1.0;
 	int i=0;
-	while (error > 0.01) {
+	while (error > 0.01 || i < 100) {
 		error = Train(ins[i%100], outs[i%100]);
 		printf("Error: %g\n", error);
 		i++;
