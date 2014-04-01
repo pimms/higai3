@@ -7,6 +7,7 @@
 NetworkParser::NetworkParser(string filename)
 	:	_filename(filename)
 {
+
 }
 
 
@@ -42,7 +43,9 @@ NeuralNetwork* NetworkParser::Parse()
 	// Create the network and assign the weights
 	network = new NeuralNetwork(topology);
 	for (int i=0; i<weights.size(); i++) {
-		network->SetLayerWeights(i+1, weights[i]);
+		// TODO:
+		// Add a setter for weights in NeuralNetwork and
+		// set the weights here.
 	}
 	
 	return network;

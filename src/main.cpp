@@ -2,7 +2,8 @@
 #include "netparser.h"
 #include "trainingparser.h"
 #include <stdlib.h>
-#include <ctime>
+#include "trainingdata.h"
+
 
 int main(int argc, char *argv[]) 
 {
@@ -11,20 +12,34 @@ int main(int argc, char *argv[])
 		//vector<TrainingData> td = tparser.Parse();
 
 		srand((unsigned)time(0));
-		NetworkParser parser("smallnet.nnet");
-		NeuralNetwork *nn = parser.Parse();
 
-		vector<double> input, output;
-		input.push_back(1.0);
-		input.push_back(1.0);
+		Topology t;
+		t.push_back(pair<int,int>(1, 0));
+		t.push_back(pair<int,int>(5, 0));
+		t.push_back(pair<int,int>(1, 0));
 
-		output = nn->Propagate(input);
+		NeuralNetwork *mlp;
+		mlp = new NeuralNetwork(t);
 
-		for (int i=0; i<output.size(); i++) {
-			printf("[Neuron %i]:  %f\n", i, output[i]);
+		const char *file = "example.data";
+
+		for (int i=0; i<10; i++) {
+			double pre = 0.0;
+			double post = 0.0;
+
+			mlp->Test(file);
+			pre = mlp->dAvgTestError;
+
+			mlp->Train(file);
+
+			mlp->Test(file);
+			post = mlp->dAvgTestError;
+			
+			printf("Pre-error: %g\nPost-error: %g\n",
+					pre, post);
 		}
-
-		nn->PrintInformation();
+		
+		delete mlp;
 
 	} catch (runtime_error err) {
 		printf("Exception caught:\n\t%s\n", err.what());

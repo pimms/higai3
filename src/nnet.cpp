@@ -1,84 +1,443 @@
+/*********************************************************************
+ * File  : mlp.cpp (renamed to nnet.cpp)
+ *
+ * Original
+ * author: Sylvain BARTHELEMY
+ *         mailto:sylvain@sylbarth.com
+ *         http://www.sylbarth.com
+ * Date  : 2000-08
+ *
+ * Note  : The file has been heavily modified from it's original
+ * 		   state to fit our specific requirements, both functional
+ * 		   and style of code.
+ *********************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#include <string.h>
+
 #include "nnet.h"
-#include "layer.h"
+
+void InitializeRandoms()
+{
+	srand( (unsigned)time( NULL ) );
+}
+
+int RandomEqualINT(int Low, int High)
+{
+	return rand() % (High-Low+1) + Low;
+}
+
+double RandomEqualREAL(double Low, double High)
+{
+	return ((double) rand() / RAND_MAX) * (High-Low) + Low;
+}
+
+bool read_number(FILE* fp, double* number)
+{
+	char szWord[256];
+	int i = 0;
+	int b;
+
+	*number = 0.0;
+
+	szWord[0] = '\0';
+	while ( ((b=fgetc(fp))!=EOF) && (i<255) ) {
+		if( (b=='.') ||
+		        (b=='0') ||
+		        (b=='1') ||
+		        (b=='2') ||
+		        (b=='3') ||
+		        (b=='4') ||
+		        (b=='5') ||
+		        (b=='6') ||
+		        (b=='7') ||
+		        (b=='8') ||
+		        (b=='9') ) {
+			szWord[i++] = (char)b;
+		} else if(i>0) break;
+	}
+	szWord[i] = '\0';
+
+	if(i==0) return false;
+
+	*number = atof(szWord);
+
+	return true;
+}
+
 
 
 NeuralNetwork::NeuralNetwork(Topology topology)
+	:	nNumLayers(0),
+		pLayers(0),
+		dEta(0.25),
+		dAlpha(0.9),
+		dGain(1.0),
+		dMSE(0.0),
+		dMAE(0.0),
+		dAvgTestError(0.0)
 {
-	if (topology.size() < 2) 
-		throw runtime_error("At least 2 layers are required");
-	
-	Layer *prevLayer = NULL;
+	/* TODO:
+	 * Consider wether we need to support bias nodes or not. Currently
+	 * bias nodes are not supported, but the number of bias nodes to
+	 * include in each layer can be found in topology[x].second.
+	 */
+	int i,j;
 
-	for (int i=0; i<topology.size(); i++) {
-		int real = topology[i].first;
-		int bias = topology[i].second;
-		Layer *layer = new Layer(prevLayer, real, bias);
+	nNumLayers = topology.size();
+	pLayers    = new Layer[nNumLayers];
 
-		if (prevLayer) {
-			prevLayer->SetNextLayer(layer);
+	for ( i = 0; i < nNumLayers; i++ ) {
+		int realNodes = topology[i].first;
+		int biasNodes = topology[i].second;
+		pLayers[i].nNumNeurons = realNodes;
+		pLayers[i].pNeurons    = new Neuron[realNodes];
+
+		for( j = 0; j < realNodes; j++ ) {
+			pLayers[i].pNeurons[j].x  = 1.0;
+			pLayers[i].pNeurons[j].e  = 0.0;
+			if(i>0) {
+				int prevReal = topology[i-1].first;
+				int prevBias = topology[i-1].second;
+				int prevCount = prevReal /* + prevBias */ ;
+
+				pLayers[i].pNeurons[j].w     = new double[prevReal ];
+				pLayers[i].pNeurons[j].dw    = new double[prevReal ];
+				pLayers[i].pNeurons[j].wsave = new double[prevReal ];
+			} else {
+				pLayers[i].pNeurons[j].w     = NULL;
+				pLayers[i].pNeurons[j].dw    = NULL;
+				pLayers[i].pNeurons[j].wsave = NULL;
+			}
 		}
 
-		prevLayer = layer;
-		 
-		_layers.push_back(layer);
 	}
+
+
 }
 
 NeuralNetwork::~NeuralNetwork()
 {
-	for (int i=0; i<_layers.size(); i++)
-		delete _layers[i];
+	int i,j;
+	for( i = 0; i < nNumLayers; i++ ) {
+		if ( pLayers[i].pNeurons ) {
+			for( j = 0; j < pLayers[i].nNumNeurons; j++ ) {
+				if ( pLayers[i].pNeurons[j].w )
+					delete[] pLayers[i].pNeurons[j].w;
+				if ( pLayers[i].pNeurons[j].dw )
+					delete[] pLayers[i].pNeurons[j].dw;
+				if ( pLayers[i].pNeurons[j].wsave )
+					delete[] pLayers[i].pNeurons[j].wsave;
+			}
+		}
+		delete[] pLayers[i].pNeurons;
+	}
+	delete[] pLayers;
 }
 
-
-void NeuralNetwork::SetLayerWeights(int layer, 
-									vector< vector<double> > &weights)
+int NeuralNetwork::Train(const char* fname)
 {
-	if (layer <= 0 || layer >= _layers.size())
-		throw runtime_error("SetLayerWeights: invalid layer index");
+	int count = 0;
+	int nbi   = 0;
+	int nbt   = 0;
+	double* input  = NULL;
+	double* output = NULL;
+	double* target = NULL;
+	FILE*   fp = NULL;
 
-	_layers[layer]->SetWeights(weights);
-}
+	fp = fopen(fname,"r");
+	if(!fp) return 0;
+
+	input  = new double[pLayers[0].nNumNeurons];
+	output = new double[pLayers[nNumLayers-1].nNumNeurons];
+	target = new double[pLayers[nNumLayers-1].nNumNeurons];
+
+	if(!input) return 0;
+	if(!output) return 0;
+	if(!target) return 0;
 
 
-int NeuralNetwork::GetLayerCount() const
-{
-	return _layers.size();
-}
+	while( !feof(fp) ) {
+		double dNumber;
+		if( read_number(fp,&dNumber) ) {
+			if( nbi < pLayers[0].nNumNeurons )
+				input[nbi++] = dNumber;
+			else if( nbt < pLayers[nNumLayers-1].nNumNeurons )
+				target[nbt++] = dNumber;
 
-const Layer* NeuralNetwork::GetLayer(int index) const
-{
-	if (index < 0 || index >= _layers.size()) {
-		throw runtime_error("[GetLayer()]: Invalid index, yo");
+			if( (nbi == pLayers[0].nNumNeurons) &&
+			        (nbt == pLayers[nNumLayers-1].nNumNeurons) ) {
+				Simulate(input, output, target, true);
+				nbi = 0;
+				nbt = 0;
+				count++;
+			}
+		} else {
+			break;
+		}
 	}
 
-	return _layers[index];
+	if(fp) fclose(fp);
+
+	if(input)  delete[] input;
+	if(output) delete[] output;
+	if(target) delete[] target;
+
+	return count;
 }
 
-
-vector<double> NeuralNetwork::Propagate(const vector<double> &input)
+int NeuralNetwork::Test(const char* fname)
 {
-	vector<double> output;
-	int size = _layers.size();
+	int count = 0;
+	int nbi   = 0;
+	int nbt   = 0;
+	double* input  = NULL;
+	double* output = NULL;
+	double* target = NULL;
+	FILE*   fp = NULL;
 
-	_layers[0]->SetInput(input);
-	
-	for (int i=1; i<size; i++) {
-		_layers[i-1]->GetOutput(output);
-		_layers[i]->SetInput(output);
+	fp = fopen(fname,"r");
+	if(!fp) return 0;
+
+	input  = new double[pLayers[0].nNumNeurons];
+	output = new double[pLayers[nNumLayers-1].nNumNeurons];
+	target = new double[pLayers[nNumLayers-1].nNumNeurons];
+
+	if(!input) return 0;
+	if(!output) return 0;
+	if(!target) return 0;
+
+	dAvgTestError = 0.0;
+
+	while( !feof(fp) ) {
+		double dNumber;
+		if( read_number(fp,&dNumber) ) {
+			if( nbi < pLayers[0].nNumNeurons )
+				input[nbi++] = dNumber;
+			else if( nbt < pLayers[nNumLayers-1].nNumNeurons )
+				target[nbt++] = dNumber;
+
+			if( (nbi == pLayers[0].nNumNeurons) &&
+			        (nbt == pLayers[nNumLayers-1].nNumNeurons) ) {
+				Simulate(input, output, target, false);
+				dAvgTestError += dMAE;
+				nbi = 0;
+				nbt = 0;
+				count++;
+			}
+		} else {
+			break;
+		}
 	}
 
-	_layers[size-1]->GetOutput(output);
-	return output;
+	dAvgTestError /= count;
+
+	if(fp) fclose(fp);
+
+	if(input)  delete[] input;
+	if(output) delete[] output;
+	if(target) delete[] target;
+
+	return count;
 }
 
-void NeuralNetwork::PrintInformation() const
+int NeuralNetwork::Evaluate()
 {
-	printf("--------- Network Information ---------\n");
-	printf("Layers: %lu\n", _layers.size());
+	int count = 0;
+	return count;
+}
 
-	for (int i=1; i<_layers.size(); i++) {
-		printf("\nLayer %i\n", i);
-		_layers[i]->PrintInformation();
+void NeuralNetwork::Run(const char* fname, const int& maxiter)
+{
+	int    countTrain = 0;
+	int    countLines = 0;
+	bool   Stop = false;
+	bool   firstIter = true;
+	double dMinTestError = 0.0;
+
+	InitializeRandoms();
+	RandomWeights();
+
+	do {
+
+		countLines += Train(fname);
+		Test(fname);
+		countTrain++;
+
+		if(firstIter) {
+			dMinTestError = dAvgTestError;
+			firstIter = false;
+		}
+
+		printf( "%i \t TestError: %f", countTrain, dAvgTestError);
+
+		if ( dAvgTestError < dMinTestError) {
+			printf(" -> saving weights\n");
+			dMinTestError = dAvgTestError;
+			SaveWeights();
+		} else if (dAvgTestError > 1.2 * dMinTestError) {
+			printf(" -> stopping training and restoring weights\n");
+			Stop = true;
+			RestoreWeights();
+		} else {
+			printf(" -> ok\n");
+		}
+
+	} while ( (!Stop) && (countTrain<maxiter) );
+
+	printf("bye\n");
+
+}
+
+
+
+/* Private Methods */
+void NeuralNetwork::RandomWeights()
+{
+	int i,j,k;
+	for( i = 1; i < nNumLayers; i++ ) {
+		for( j = 0; j < pLayers[i].nNumNeurons; j++ ) {
+			for ( k = 0; k < pLayers[i-1].nNumNeurons; k++ ) {
+				pLayers[i].pNeurons[j].w [k]    = RandomEqualREAL(-0.5, 0.5);
+				pLayers[i].pNeurons[j].dw[k]    = 0.0;
+				pLayers[i].pNeurons[j].wsave[k] = 0.0;
+			}
+		}
 	}
 }
+
+void NeuralNetwork::SetInputSignal(double* input)
+{
+	int i;
+	for ( i = 0; i < pLayers[0].nNumNeurons; i++ ) {
+		pLayers[0].pNeurons[i].x = input[i];
+	}
+}
+
+void NeuralNetwork::GetOutputSignal(double* output)
+{
+	int i;
+	for ( i = 0; i < pLayers[nNumLayers-1].nNumNeurons; i++ ) {
+		output[i] = pLayers[nNumLayers-1].pNeurons[i].x;
+	}
+}
+
+void NeuralNetwork::SaveWeights()
+{
+	int i,j,k;
+	for( i = 1; i < nNumLayers; i++ ) {
+		for( j = 0; j < pLayers[i].nNumNeurons; j++ ) {
+			for ( k = 0; k < pLayers[i-1].nNumNeurons; k++ ) {
+				pLayers[i].pNeurons[j].wsave[k] = pLayers[i].pNeurons[j].w[k];
+			}
+		}
+	}
+}
+
+void NeuralNetwork::RestoreWeights()
+{
+	int i,j,k;
+	for( i = 1; i < nNumLayers; i++ ) {
+		for( j = 0; j < pLayers[i].nNumNeurons; j++ ) {
+			for ( k = 0; k < pLayers[i-1].nNumNeurons; k++ ) {
+				pLayers[i].pNeurons[j].w[k] = pLayers[i].pNeurons[j].wsave[k];
+			}
+		}
+	}
+}
+
+void NeuralNetwork::PropagateSignal()
+{
+	int i,j,k;
+
+	for( i = 1; i < nNumLayers; i++ ) {
+		for( j = 0; j < pLayers[i].nNumNeurons; j++ ) {
+			double sum = 0.0;
+			for ( k = 0; k < pLayers[i-1].nNumNeurons; k++ ) {
+				double out = pLayers[i-1].pNeurons[k].x;
+				double w   = pLayers[i  ].pNeurons[j].w[k];
+				sum += w * out;
+			}
+
+			pLayers[i].pNeurons[j].x = 1.0 / (1.0 + exp(-dGain * sum));
+		}
+	}
+}
+
+void NeuralNetwork::ComputeOutputError(double* target)
+{
+	int  i;
+	dMSE = 0.0;
+	dMAE = 0.0;
+	for( i = 0; i < pLayers[nNumLayers-1].nNumNeurons; i++) {
+		double x = pLayers[nNumLayers-1].pNeurons[i].x;
+		double d = target[i] - x;
+		pLayers[nNumLayers-1].pNeurons[i].e = dGain * x * (1.0 - x) * d;
+		dMSE += (d * d);
+		dMAE += fabs(d);
+	}
+
+	dMSE /= (double)pLayers[nNumLayers-1].nNumNeurons;
+	dMAE /= (double)pLayers[nNumLayers-1].nNumNeurons;
+}
+
+void NeuralNetwork::BackPropagateError()
+{
+	int i,j,k;
+	for( i = (nNumLayers-2); i >= 0; i-- ) {
+		for( j = 0; j < pLayers[i].nNumNeurons; j++ ) {
+			double x = pLayers[i].pNeurons[j].x;
+			double E = 0.0;
+			for ( k = 0; k < pLayers[i+1].nNumNeurons; k++ ) {
+				E += pLayers[i+1].pNeurons[k].w[j] * pLayers[i+1].pNeurons[k].e;
+			}
+			pLayers[i].pNeurons[j].e = dGain * x * (1.0 - x) * E;
+		}
+	}
+}
+
+void NeuralNetwork::AdjustWeights()
+{
+	int i,j,k;
+	for( i = 1; i < nNumLayers; i++ ) {
+		for( j = 0; j < pLayers[i].nNumNeurons; j++ ) {
+			for ( k = 0; k < pLayers[i-1].nNumNeurons; k++ ) {
+				double x  = pLayers[i-1].pNeurons[k].x;
+				double e  = pLayers[i  ].pNeurons[j].e;
+				double dw = pLayers[i  ].pNeurons[j].dw[k];
+				pLayers[i].pNeurons[j].w [k] += dEta * x * e + dAlpha * dw;
+				pLayers[i].pNeurons[j].dw[k]  = dEta * x * e;
+			}
+		}
+	}
+}
+
+void NeuralNetwork::Simulate(double* input, double* output, 
+									double* target, bool training)
+{
+
+	if(!input)  return;
+	if(!target) return;
+
+	SetInputSignal(input);
+	PropagateSignal();
+	if(output) GetOutputSignal(output);
+
+	if(output && !training) {
+		printf("test: %.2f %.2f %.2f = %.2f\n", 
+			   input[0],input[1],target[0],output[0]);
+	}
+
+	ComputeOutputError(target);
+
+	if (training) {
+		BackPropagateError();
+		AdjustWeights();
+	}
+}
+
+
+
