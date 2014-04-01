@@ -1,11 +1,15 @@
 #include "nnet.h"
 #include "netparser.h"
+#include "trainingparser.h"
 #include <stdlib.h>
 #include <ctime>
 
 int main(int argc, char *argv[]) 
 {
 	try {
+		//TrainingParser tparser("trainingdata.trn");
+		//vector<TrainingData> td = tparser.Parse();
+
 		srand((unsigned)time(0));
 		NetworkParser parser("smallnet.nnet");
 		NeuralNetwork *nn = parser.Parse();
