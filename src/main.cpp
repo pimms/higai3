@@ -2,7 +2,6 @@
 #include "netparser.h"
 #include "trainingparser.h"
 #include <stdlib.h>
-#include "trainingdata.h"
 
 
 int main(int argc, char *argv[]) 
