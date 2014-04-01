@@ -70,7 +70,7 @@ bool read_number(FILE* fp, double* number)
 
 
 
-MultiLayerPerceptron::MultiLayerPerceptron(Topology topology)
+NeuralNetwork::NeuralNetwork(Topology topology)
 	:	nNumLayers(0),
 		pLayers(0),
 		dEta(0.25),
@@ -115,7 +115,7 @@ MultiLayerPerceptron::MultiLayerPerceptron(Topology topology)
 
 }
 
-MultiLayerPerceptron::~MultiLayerPerceptron()
+NeuralNetwork::~NeuralNetwork()
 {
 	int i,j;
 	for( i = 0; i < nNumLayers; i++ ) {
@@ -134,7 +134,7 @@ MultiLayerPerceptron::~MultiLayerPerceptron()
 	delete[] pLayers;
 }
 
-int MultiLayerPerceptron::Train(const char* fname)
+int NeuralNetwork::Train(const char* fname)
 {
 	int count = 0;
 	int nbi   = 0;
@@ -185,7 +185,7 @@ int MultiLayerPerceptron::Train(const char* fname)
 	return count;
 }
 
-int MultiLayerPerceptron::Test(const char* fname)
+int NeuralNetwork::Test(const char* fname)
 {
 	int count = 0;
 	int nbi   = 0;
@@ -240,13 +240,13 @@ int MultiLayerPerceptron::Test(const char* fname)
 	return count;
 }
 
-int MultiLayerPerceptron::Evaluate()
+int NeuralNetwork::Evaluate()
 {
 	int count = 0;
 	return count;
 }
 
-void MultiLayerPerceptron::Run(const char* fname, const int& maxiter)
+void NeuralNetwork::Run(const char* fname, const int& maxiter)
 {
 	int    countTrain = 0;
 	int    countLines = 0;
@@ -291,7 +291,7 @@ void MultiLayerPerceptron::Run(const char* fname, const int& maxiter)
 
 
 /* Private Methods */
-void MultiLayerPerceptron::RandomWeights()
+void NeuralNetwork::RandomWeights()
 {
 	int i,j,k;
 	for( i = 1; i < nNumLayers; i++ ) {
@@ -305,7 +305,7 @@ void MultiLayerPerceptron::RandomWeights()
 	}
 }
 
-void MultiLayerPerceptron::SetInputSignal(double* input)
+void NeuralNetwork::SetInputSignal(double* input)
 {
 	int i;
 	for ( i = 0; i < pLayers[0].nNumNeurons; i++ ) {
@@ -313,7 +313,7 @@ void MultiLayerPerceptron::SetInputSignal(double* input)
 	}
 }
 
-void MultiLayerPerceptron::GetOutputSignal(double* output)
+void NeuralNetwork::GetOutputSignal(double* output)
 {
 	int i;
 	for ( i = 0; i < pLayers[nNumLayers-1].nNumNeurons; i++ ) {
@@ -321,7 +321,7 @@ void MultiLayerPerceptron::GetOutputSignal(double* output)
 	}
 }
 
-void MultiLayerPerceptron::SaveWeights()
+void NeuralNetwork::SaveWeights()
 {
 	int i,j,k;
 	for( i = 1; i < nNumLayers; i++ ) {
@@ -333,7 +333,7 @@ void MultiLayerPerceptron::SaveWeights()
 	}
 }
 
-void MultiLayerPerceptron::RestoreWeights()
+void NeuralNetwork::RestoreWeights()
 {
 	int i,j,k;
 	for( i = 1; i < nNumLayers; i++ ) {
@@ -345,7 +345,7 @@ void MultiLayerPerceptron::RestoreWeights()
 	}
 }
 
-void MultiLayerPerceptron::PropagateSignal()
+void NeuralNetwork::PropagateSignal()
 {
 	int i,j,k;
 
@@ -363,7 +363,7 @@ void MultiLayerPerceptron::PropagateSignal()
 	}
 }
 
-void MultiLayerPerceptron::ComputeOutputError(double* target)
+void NeuralNetwork::ComputeOutputError(double* target)
 {
 	int  i;
 	dMSE = 0.0;
@@ -380,7 +380,7 @@ void MultiLayerPerceptron::ComputeOutputError(double* target)
 	dMAE /= (double)pLayers[nNumLayers-1].nNumNeurons;
 }
 
-void MultiLayerPerceptron::BackPropagateError()
+void NeuralNetwork::BackPropagateError()
 {
 	int i,j,k;
 	for( i = (nNumLayers-2); i >= 0; i-- ) {
@@ -395,7 +395,7 @@ void MultiLayerPerceptron::BackPropagateError()
 	}
 }
 
-void MultiLayerPerceptron::AdjustWeights()
+void NeuralNetwork::AdjustWeights()
 {
 	int i,j,k;
 	for( i = 1; i < nNumLayers; i++ ) {
@@ -411,7 +411,7 @@ void MultiLayerPerceptron::AdjustWeights()
 	}
 }
 
-void MultiLayerPerceptron::Simulate(double* input, double* output, 
+void NeuralNetwork::Simulate(double* input, double* output, 
 									double* target, bool training)
 {
 

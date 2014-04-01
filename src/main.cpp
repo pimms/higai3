@@ -14,10 +14,11 @@ int main(int argc, char *argv[])
 		t.push_back(pair<int,int>(5, 0));
 		t.push_back(pair<int,int>(1, 0));
 
-		MultiLayerPerceptron *mlp;
-		mlp = new MultiLayerPerceptron(t);
+		NeuralNetwork *mlp;
+		mlp = new NeuralNetwork(t);
 
-		mlp->Train("");
+		int status = mlp->Train("example.data");
+		printf("Trainig status: %i\n", status);
 		
 		delete mlp;
 

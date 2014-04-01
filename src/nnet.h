@@ -30,10 +30,10 @@ struct Layer {
 	Neuron* pNeurons;
 };
 
-class MultiLayerPerceptron {
+class NeuralNetwork {
 public:
-	MultiLayerPerceptron(Topology topology);
-	~MultiLayerPerceptron();
+	NeuralNetwork (Topology topology);
+	~NeuralNetwork ();
 
 	int Train(const char* fnames);
 	int Test (const char* fname);
