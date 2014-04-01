@@ -411,7 +411,8 @@ void MultiLayerPerceptron::AdjustWeights()
 	}
 }
 
-void MultiLayerPerceptron::Simulate(double* input, double* output, double* target, bool training)
+void MultiLayerPerceptron::Simulate(double* input, double* output, 
+									double* target, bool training)
 {
 
 	if(!input)  return;
@@ -421,9 +422,10 @@ void MultiLayerPerceptron::Simulate(double* input, double* output, double* targe
 	PropagateSignal();
 	if(output) GetOutputSignal(output);
 
-	if(output && !training) 
+	if(output && !training) {
 		printf("test: %.2f %.2f %.2f = %.2f\n", 
 			   input[0],input[1],target[0],output[0]);
+	}
 
 	ComputeOutputError(target);
 

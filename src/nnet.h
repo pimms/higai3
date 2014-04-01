@@ -66,7 +66,7 @@ private:
 	int    nNumLayers;
 	Layer* pLayers;
 
-	double dMSE;
-	double dMAE;
+	double dMSE; // TODO: wtf is this
+	double dMAE; // TODO: wtf is this
 };
 
