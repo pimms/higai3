@@ -1,30 +1,72 @@
+/*********************************************************************
+ * File  : mlp.h (renamed to nnet.h)
+ *
+ * Original 
+ * author: Sylvain BARTHELEMY
+ *         mailto:sylvain@sylbarth.com
+ *         http://www.sylbarth.com
+ * Date  : 2000-08
+ *
+ * Note  : The file has been heavily modified from it's original
+ * 		   state to fit our specific requirements, both functional
+ * 		   and style of code.
+ *********************************************************************/
+
 #pragma once
 
 #include "types.h"
 
-class Layer;
 
+struct Neuron {
+	double  x;    
+	double  e;    
+	double* w;    
+	double* dw;    
+	double* wsave; 
+};
 
-class NeuralNetwork {
+struct Layer {
+	int     nNumNeurons;
+	Neuron* pNeurons;
+};
+
+class MultiLayerPerceptron {
 public:
-	NeuralNetwork(Topology topology);
-	~NeuralNetwork();
+	MultiLayerPerceptron(Topology topology);
+	~MultiLayerPerceptron();
 
-	/* Sets the weights of the Layer of index "layer". The length of the
-	 * outer vector must be equal to the number of nodes in the layer.
-	 * The length of the inner vectors must be equal to the total count
-	 * of nodes in the previous layer. Layer::SetWeights(..) throws a
-	 * runtime_error if the format of the vector is invalid.
-	 */
-	void SetLayerWeights(int layer, vector< vector<double> > &weights);
+	int Train(const char* fnames);
+	int Test (const char* fname);
+	int Evaluate();
 
-	int GetLayerCount() const;
-	const Layer* GetLayer(int layerIndex) const;
+	void Run(const char* fname, const int& maxiter);
 
-	vector<double> Propagate(const vector<double>& input);
-
-	void PrintInformation() const;
+	double dEta;
+	double dAlpha;
+	double dGain;
+	double dAvgTestError;
 
 private:
-	vector<Layer*> _layers;
+	void RandomWeights();
+
+	void SetInputSignal (double* input);
+	void GetOutputSignal(double* output);
+
+	void SaveWeights();
+	void RestoreWeights();
+
+	void PropagateSignal();
+	void ComputeOutputError(double* target);
+	void BackPropagateError();
+	void AdjustWeights();
+
+	void Simulate(double* input, double* output, 
+				  double* target, bool training);
+
+	int    nNumLayers;
+	Layer* pLayers;
+
+	double dMSE;
+	double dMAE;
 };
+
