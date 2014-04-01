@@ -17,8 +17,23 @@ int main(int argc, char *argv[])
 		NeuralNetwork *mlp;
 		mlp = new NeuralNetwork(t);
 
-		int status = mlp->Train("example.data");
-		printf("Trainig status: %i\n", status);
+		const char *file = "example.data";
+
+		for (int i=0; i<10; i++) {
+			double pre = 0.0;
+			double post = 0.0;
+
+			mlp->Test(file);
+			pre = mlp->dAvgTestError;
+
+			mlp->Train(file);
+
+			mlp->Test(file);
+			post = mlp->dAvgTestError;
+			
+			printf("Pre-error: %g\nPost-error: %g\n",
+					pre, post);
+		}
 		
 		delete mlp;
 

@@ -100,9 +100,13 @@ NeuralNetwork::NeuralNetwork(Topology topology)
 			pLayers[i].pNeurons[j].x  = 1.0;
 			pLayers[i].pNeurons[j].e  = 0.0;
 			if(i>0) {
-				pLayers[i].pNeurons[j].w     = new double[realNodes];
-				pLayers[i].pNeurons[j].dw    = new double[realNodes];
-				pLayers[i].pNeurons[j].wsave = new double[realNodes];
+				int prevReal = topology[i-1].first;
+				int prevBias = topology[i-1].second;
+				int prevCount = prevReal /* + prevBias */ ;
+
+				pLayers[i].pNeurons[j].w     = new double[prevReal ];
+				pLayers[i].pNeurons[j].dw    = new double[prevReal ];
+				pLayers[i].pNeurons[j].wsave = new double[prevReal ];
 			} else {
 				pLayers[i].pNeurons[j].w     = NULL;
 				pLayers[i].pNeurons[j].dw    = NULL;
