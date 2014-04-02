@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 			mlp->Test(file);
 			post = mlp->dAvgTestError;
 			
-			printf("Pre-error: %g\nPost-error: %g\n",
+			printf("\nPre-error: %g\nPost-error: %g\n",
 					pre, post);
 		}
 		

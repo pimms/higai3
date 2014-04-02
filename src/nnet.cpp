@@ -426,11 +426,6 @@ void NeuralNetwork::Simulate(double* input, double* output,
 	PropagateSignal();
 	if(output) GetOutputSignal(output);
 
-	if(output && !training) {
-		printf("test: %.2f %.2f %.2f = %.2f\n", 
-			   input[0],input[1],target[0],output[0]);
-	}
-
 	ComputeOutputError(target);
 
 	if (training) {
