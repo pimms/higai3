@@ -15,4 +15,5 @@ if (WIN32)
 endif(WIN32)
 
 add_executable(ann ${ann_SRC})
+target_link_libraries(ann SDL2_image)
 target_link_libraries(ann SDL2)

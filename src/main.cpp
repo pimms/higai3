@@ -14,15 +14,16 @@ int main(int argc, char *argv[])
 
 		Topology t;
 		t.push_back(pair<int,int>(1, 0));
-		t.push_back(pair<int,int>(5, 0));
+		t.push_back(pair<int,int>(2, 0));
 		t.push_back(pair<int,int>(1, 0));
 
 		NeuralNetwork *mlp;
 		mlp = new NeuralNetwork(t);
+		mlp->dEta = 0.5;
 
 		const char *file = "example.data";
 
-		for (int i=0; i<10; i++) {
+		for (int i=0; i<100000; i++) {
 			double pre = 0.0;
 			double post = 0.0;
 
@@ -34,8 +35,8 @@ int main(int argc, char *argv[])
 			mlp->Test(file);
 			post = mlp->dAvgTestError;
 			
-			printf("\nPre-error: %g\nPost-error: %g\n",
-					pre, post);
+			//printf("\nPre-error: %g\nPost-error: %g\n",
+			//		pre, post);
 		}
 		
 		delete mlp;

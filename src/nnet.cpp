@@ -429,6 +429,10 @@ void NeuralNetwork::Simulate(double* input, double* output,
 	ComputeOutputError(target);
 
 	if (training) {
+		printf("Input: %g \t\toutput: %g\n", *input, *output);
+	}
+
+	if (training) {
 		BackPropagateError();
 		AdjustWeights();
 	}
