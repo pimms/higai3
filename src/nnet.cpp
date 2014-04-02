@@ -301,7 +301,7 @@ void NeuralNetwork::RandomWeights()
 	for( i = 1; i < nNumLayers; i++ ) {
 		for( j = 0; j < pLayers[i].nNumNeurons; j++ ) {
 			for ( k = 0; k < pLayers[i-1].nNumNeurons; k++ ) {
-				pLayers[i].pNeurons[j].w [k]    = RandomEqualREAL(-0.5, 0.5);
+				pLayers[i].pNeurons[j].w [k]    = RandomEqualREAL(-1, 1);
 				pLayers[i].pNeurons[j].dw[k]    = 0.0;
 				pLayers[i].pNeurons[j].wsave[k] = 0.0;
 			}
@@ -429,7 +429,8 @@ void NeuralNetwork::Simulate(double* input, double* output,
 	ComputeOutputError(target);
 
 	if (training) {
-		printf("Input: %g \t\toutput: %g\n", *input, *output);
+	//	printf("test: %.2f %.2f %.2f = %.2f\n", 
+	//		   input[0],input[1],target[0],output[0]);
 	}
 
 	if (training) {

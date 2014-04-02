@@ -14,33 +14,15 @@ int main(int argc, char *argv[])
 
 		Topology t;
 		t.push_back(pair<int,int>(1, 0));
-		t.push_back(pair<int,int>(2, 0));
+		t.push_back(pair<int,int>(24, 0));
+		t.push_back(pair<int,int>(12, 0));
 		t.push_back(pair<int,int>(1, 0));
 
 		NeuralNetwork *mlp;
 		mlp = new NeuralNetwork(t);
-		mlp->dEta = 0.5;
-
-		const char *file = "example.data";
-
-		for (int i=0; i<100000; i++) {
-			double pre = 0.0;
-			double post = 0.0;
-
-			mlp->Test(file);
-			pre = mlp->dAvgTestError;
-
-			mlp->Train(file);
-
-			mlp->Test(file);
-			post = mlp->dAvgTestError;
-			
-			//printf("\nPre-error: %g\nPost-error: %g\n",
-			//		pre, post);
-		}
+		mlp->Run("dat/kaffe.trn", 50000);
 		
 		delete mlp;
-
 	} catch (runtime_error err) {
 		printf("Exception caught:\n\t%s\n", err.what());
 		return 1;
