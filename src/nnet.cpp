@@ -250,29 +250,30 @@ int NeuralNetwork::Evaluate()
 	return count;
 }
 
-void NeuralNetwork::Run(const char* fname, int maxiter)
+void NeuralNetwork::Run(const char* fname, int maxiter, ResultData *res)
 {
-	int    countTrain = 0;
-	int    countLines = 0;
 	bool   Stop = false;
 	bool   firstIter = true;
 	double dMinTestError = 0.0;
+
+	res->iterations = 0;
 
 	InitializeRandoms();
 	RandomWeights();
 
 	do {
-
-		countLines += Train(fname);
+		res->trainingPasses += Train(fname);
 		Test(fname);
-		countTrain++;
+		res->iterations++;
 
 		if(firstIter) {
 			dMinTestError = dAvgTestError;
+			res->initialError = dAvgTestError;
 			firstIter = false;
 		}
 
-		printf( "%i \t TestError: %f", countTrain, dAvgTestError);
+		res->finalError = dAvgTestError;
+		printf( "%i \t TestError: %f", res->iterations, dAvgTestError);
 
 		if ( dAvgTestError < dMinTestError) {
 			printf(" -> saving weights\n");
@@ -286,10 +287,7 @@ void NeuralNetwork::Run(const char* fname, int maxiter)
 			printf(" -> ok\n");
 		}
 
-	} while ( (!Stop) && (countTrain<maxiter) );
-
-	printf("bye\n");
-
+	} while ( (!Stop) && (res->iterations<maxiter) );
 }
 
 

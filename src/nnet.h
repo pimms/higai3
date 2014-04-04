@@ -17,6 +17,13 @@
 #include "types.h"
 
 
+struct ResultData {
+	double initialError;
+	double finalError;
+	int iterations;
+	int trainingPasses;
+};
+
 struct Neuron {
 	double  x;    
 	double  e;    
@@ -48,7 +55,7 @@ public:
 	int Test (const char* fname);
 	int Evaluate();
 
-	void Run(const char* fname, int maxiter);
+	void Run(const char* fname, int maxiter, ResultData *res);
 
 	double dEta;
 	double dAlpha;

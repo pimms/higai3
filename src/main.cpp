@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 		srand((unsigned)time(0));
 
 		Topology t;
+		ResultData result;
 		CmdConfig conf = {&t, 0.25, 10000, NULL};
 		ParseArgs(argc, argv, &conf);
 
@@ -47,7 +48,11 @@ int main(int argc, char *argv[])
 
 		NeuralNetwork mlp(t);
 		mlp.dEta = conf.eta;
-		mlp.Run(conf.trainingFile, conf.maxIterations);
+		mlp.Run(conf.trainingFile, conf.maxIterations, &result);
+
+		printf("Initial error:   %g\n", result.initialError);
+		printf("Final error:     %g\n", result.finalError);
+		printf("Total passes:    %i\n", result.trainingPasses);
 	} catch (runtime_error err) {
 		printf("Exception caught:\n\t%s\n", err.what());
 		return 1;
