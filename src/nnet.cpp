@@ -250,7 +250,7 @@ int NeuralNetwork::Evaluate()
 	return count;
 }
 
-void NeuralNetwork::Run(const char* fname, const int& maxiter)
+void NeuralNetwork::Run(const char* fname, int maxiter)
 {
 	int    countTrain = 0;
 	int    countLines = 0;

@@ -48,7 +48,7 @@ public:
 	int Test (const char* fname);
 	int Evaluate();
 
-	void Run(const char* fname, const int& maxiter);
+	void Run(const char* fname, int maxiter);
 
 	double dEta;
 	double dAlpha;
