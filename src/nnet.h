@@ -41,18 +41,8 @@ class NeuralNetwork {
 public:
 	NeuralNetwork (Topology topology);
 	~NeuralNetwork ();
-
-	/* Trains the network based on the contents of the file.
-	 * The number of trainings performed is returned.
-	 */
-	int Train(const char* fnames);
-
-	/* Calculate and compare the network to the contents of the 
-	 * file. The format is identical to that used in Train(...).
-	 * The number of items tested against is returned. "dAvgTestError"
-	 * is set to the average error of all the items.
-	 */
-	int Test (const char* fname);
+	
+	int Pass (const char* fname, bool train);
 	int Evaluate();
 
 	void Run(const char* fname, int maxiter, ResultData *res);

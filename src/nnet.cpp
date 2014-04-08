@@ -138,58 +138,7 @@ NeuralNetwork::~NeuralNetwork()
 	delete[] pLayers;
 }
 
-int NeuralNetwork::Train(const char* fname)
-{
-	int count = 0;
-	int nbi   = 0;
-	int nbt   = 0;
-	double* input  = NULL;
-	double* output = NULL;
-	double* target = NULL;
-	FILE*   fp = NULL;
-
-	fp = fopen(fname,"r");
-	if(!fp) return 0;
-
-	input  = new double[pLayers[0].nNumNeurons];
-	output = new double[pLayers[nNumLayers-1].nNumNeurons];
-	target = new double[pLayers[nNumLayers-1].nNumNeurons];
-
-	if(!input) return 0;
-	if(!output) return 0;
-	if(!target) return 0;
-
-
-	while( !feof(fp) ) {
-		double dNumber;
-		if( read_number(fp,&dNumber) ) {
-			if( nbi < pLayers[0].nNumNeurons )
-				input[nbi++] = dNumber;
-			else if( nbt < pLayers[nNumLayers-1].nNumNeurons )
-				target[nbt++] = dNumber;
-
-			if( (nbi == pLayers[0].nNumNeurons) &&
-			        (nbt == pLayers[nNumLayers-1].nNumNeurons) ) {
-				Simulate(input, output, target, true);
-				nbi = 0;
-				nbt = 0;
-				count++;
-			}
-		} else {
-			break;
-		}
-	}
-
-	if(fp) fclose(fp);
-
-	if(input)  delete[] input;
-	if(output) delete[] output;
-	if(target) delete[] target;
-
-	return count;
-}
-
-int NeuralNetwork::Test(const char* fname)
+int NeuralNetwork::Pass(const char* fname, bool train)
 {
 	int count = 0;
 	int nbi   = 0;
@@ -222,7 +171,7 @@ int NeuralNetwork::Test(const char* fname)
 
 			if( (nbi == pLayers[0].nNumNeurons) &&
 			        (nbt == pLayers[nNumLayers-1].nNumNeurons) ) {
-				Simulate(input, output, target, false);
+				Simulate(input, output, target, train);
 				dAvgTestError += dMAE;
 				nbi = 0;
 				nbt = 0;
@@ -253,7 +202,6 @@ int NeuralNetwork::Evaluate()
 void NeuralNetwork::Run(const char* fname, int maxiter, ResultData *res)
 {
 	bool   Stop = false;
-	bool   firstIter = true;
 	double dMinTestError = 0.0;
 
 	res->iterations = 0;
@@ -262,16 +210,14 @@ void NeuralNetwork::Run(const char* fname, int maxiter, ResultData *res)
 	RandomWeights();
 
 	do {
-		res->trainingPasses += Train(fname);
-		Test(fname);
-		res->iterations++;
+		res->trainingPasses += Pass(fname, true);
 
-		if(firstIter) {
+		if(!res->iterations) {
 			dMinTestError = dAvgTestError;
 			res->initialError = dAvgTestError;
-			firstIter = false;
 		}
 
+		res->iterations++;
 		res->finalError = dAvgTestError;
 		printf( "%i \t TestError: %f", res->iterations, dAvgTestError);
 

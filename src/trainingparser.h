@@ -17,13 +17,13 @@ struct TrainingData {
 
 class TrainingParser {
 	public:
-		TrainingParser(string filename);
+		TrainingParser(string filename, const Topology *top);
 		~TrainingParser();
 
-		vector<TrainingData> Parse();
+		TrainingData ParseText();
 	private:
 		bool OpenFileHandle(fstream &file, bool write);
 		
 		string _filename;
-		int inputcount, outputcount;
+		const Topology *_top;
 };

@@ -4,8 +4,8 @@
 #include <cstdlib>
 #include <iostream>
 
-TrainingParser::TrainingParser(string filename) 
-		: _filename(filename) 
+TrainingParser::TrainingParser(string filename, const Topology *top) 
+		: _filename(filename), _top(top)
 {
 }
 
@@ -13,10 +13,12 @@ TrainingParser::~TrainingParser()
 {
 }
 
-vector<TrainingData> TrainingParser::Parse() 
+TrainingData TrainingParser::ParseText() 
 {
 
-	vector<TrainingData> returndata;
+	int inCount = (*_top)[0].first;
+	int outCount = (*_top)[_top->size()-1].first;
+	TrainingData returndata;
 
 	fstream filename;
 	if (!OpenFileHandle(filename, false))
@@ -28,32 +30,6 @@ vector<TrainingData> TrainingParser::Parse()
 	filename >> trainingcount;
 	
 	TrainingData data;
-
-	for (int i = 0; i < trainingcount; ++i)
-	{
-		printf("Trainingcount: %d\n", i);
-		filename >> inputcount;
-		filename >> outputcount;
-		double nr;
-
-		printf("Input:\n");
-		for (int i = 0; i < inputcount; ++i)
-		{
-			filename >> nr;
-			data.input.push_back(nr);
-			printf("%f\n", nr);
-		}
-
-		printf("Output:\n");
-		for (int i = 0; i < outputcount; ++i)
-		{
-			filename >> nr;
-			data.expectedOutput.push_back(nr);
-			printf("%f\n", nr);
-		}
-
-		returndata.push_back(data);
-	}
 
 	return returndata;
 }
