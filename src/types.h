@@ -27,3 +27,5 @@ typedef vector< pair<int,int> > Topology;
  * the nodes in the layer.
  */
 typedef vector< vector<double> > LayerWeights;
+
+typedef unsigned char uint8;
