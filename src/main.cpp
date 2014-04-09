@@ -10,11 +10,26 @@ const char *HELP_USAGE =
 	"Usage:\n"
 	"	-h \n"
 	"		Display this message\n"
-	"	-tfile <file> [REQUIRED]\n"
+	"	-tfile <file>\n"
 	"		Define the file containing the training data\n"
+	"		Passing this argument causes the program to load a text file\n"
+	"		containing the training data.\n"
+	"	-img [IMPLICIT BY DEFAULT]\n"
+	"		Use images\n"
+	"	-scalefactor [REQUIRED FOR -img]\n"
+	"		The factor with which to scale down parsed images. Use 1 for\n"
+	"		no change, 2 for half size, 3 for 1/3 size, etc.\n"
 	"	-top <int>,<int>...<int>\n"
 	"		Define the topology of the network.\n"
 	"		Example: -top 1,3,1\n"
+	"		\n"
+	"		When using text files (-tfile), the topology will be literally\n"
+	"		translated. When using images (-img), the -top argument only\n"
+	"		define the hidden layers. \n"
+	"		Example with scaling factor 5:\n"
+	"			-top 4,3\n"
+	"			will result in the topology:\n"
+	"			36,4,3,26\n"
 	" 	-deta <double>\n"
 	"		Set the training rate of the network\n"
 	"	-iter <int>\n"
@@ -22,15 +37,28 @@ const char *HELP_USAGE =
 	;
 
 struct CmdConfig {
+	bool img;
+	int scalefactor;
+
 	Topology *topology;
 	double eta;
 	int maxIterations;
 	const char *trainingFile;
+
+	CmdConfig() 
+		: 	img(false),
+			scalefactor(0),
+			topology(NULL),
+			eta(0.25),
+			maxIterations(10000),
+			trainingFile(NULL)
+	{ }
 };
 
 void ParseArgs(int argc, char **argv, CmdConfig *conf);
 void ParseTopology(char *str, Topology *t);
 void PrintHelp();
+TrainingSet ParseTrainingData(CmdConfig *conf);
 
 
 int main(int argc, char *argv[]) 
@@ -40,15 +68,16 @@ int main(int argc, char *argv[])
 
 		Topology t;
 		ResultData result;
-		CmdConfig conf = {&t, 0.25, 10000, NULL};
+		CmdConfig conf;
+
+		conf.topology = &t;
 		ParseArgs(argc, argv, &conf);
 
-		if (!conf.trainingFile)
-			throw runtime_error("Training file required (see help output)");
+		TrainingSet tset = ParseTrainingData(&conf);
 
 		NeuralNetwork mlp(t);
 		mlp.dEta = conf.eta;
-		mlp.Run(conf.trainingFile, conf.maxIterations, &result);
+		mlp.Run(tset, conf.maxIterations, &result);
 
 		printf("Initial error:   %g\n", result.initialError);
 		printf("Final error:     %g\n", result.finalError);
@@ -68,6 +97,10 @@ void ParseArgs(int argc, char **argv, CmdConfig *conf)
 	for (int i=1; i<argc; i++) {
 		if (!strcmp(argv[i], "-deta")) {
 			conf->eta = atof(argv[++i]);
+		} else if (!strcmp(argv[i], "-img")) {
+			conf->img = true;
+		} else if (!strcmp(argv[i], "-scalefactor")) {
+			conf->scalefactor = atoi(argv[++i]);
 		} else if (!strcmp(argv[i], "-top")) {
 			ParseTopology(argv[++i], conf->topology);
 		} else if (!strcmp(argv[i], "-iter")) {
@@ -81,6 +114,22 @@ void ParseArgs(int argc, char **argv, CmdConfig *conf)
 			PrintHelp();
 			exit(0);
 		}
+	}
+
+	if (conf->img && conf->trainingFile) {
+		printf("ERROR: Both -img and -tfile defined.\n");
+		PrintHelp();
+		exit(1);
+	}
+
+	if (!conf->trainingFile) {
+		conf->img = true;
+	}
+
+	if (conf->img && conf->scalefactor <= 0) {
+		printf("ERROR: Undefined / invalid value for scalefactor\n");
+		PrintHelp();
+		exit(1);
 	}
 }
 
@@ -104,5 +153,19 @@ void ParseTopology(char *str, Topology *t)
 void PrintHelp()
 {
 	printf("%s", HELP_USAGE);
+}
+
+TrainingSet ParseTrainingData(CmdConfig *conf)
+{
+	TrainingSet tset;
+
+	if (conf->img) {
+		throw runtime_error("NOT YET IMPLEMENTED: img");
+	} else {
+		TrainingParser parser(conf->trainingFile, conf->topology);
+		tset = parser.ParseText();
+	}
+
+	return tset;
 }
 

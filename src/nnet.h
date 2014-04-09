@@ -45,7 +45,7 @@ public:
 	int Pass (const TrainingSet &tset, bool train);
 	int Evaluate();
 
-	void Run(const char* fname, int maxiter, ResultData *res);
+	void Run(const TrainingSet &tset, int maxiter, ResultData *res);
 
 	double dEta;
 	double dAlpha;

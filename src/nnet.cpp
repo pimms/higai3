@@ -169,7 +169,8 @@ int NeuralNetwork::Evaluate()
 	return count;
 }
 
-void NeuralNetwork::Run(const char* fname, int maxiter, ResultData *res)
+void NeuralNetwork::Run(const TrainingSet &tset, int maxiter, 
+						ResultData *res)
 {
 	bool   Stop = false;
 	double dMinTestError = 0.0;
@@ -178,9 +179,6 @@ void NeuralNetwork::Run(const char* fname, int maxiter, ResultData *res)
 
 	InitializeRandoms();
 	RandomWeights();
-
-	TrainingParser parser(fname, &_topology);
-	TrainingSet tset = parser.ParseText();
 
 	do {
 		res->trainingPasses += Pass(tset, true);
