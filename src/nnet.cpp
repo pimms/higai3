@@ -156,6 +156,17 @@ int NeuralNetwork::Pass(const TrainingSet &tset, bool train)
 		Simulate(input, output, target, train);
 		dAvgTestError += dMAE;
 		count++;
+
+		/* UNCOMMENT FOR DETAILED IN/OUT INFO
+		printf("Input:");
+		for (int j=0; j<tset[i].input.size(); j++) 
+			printf("%0.2g ", tset[i].input[j]);
+		printf("\nOutput: ");
+		for (int j=0; j<tset[i].expectedOutput.size(); j++) 
+			printf("%0.2g ", output[j]);
+		printf("\n");
+		getchar();
+		*/
 	}
 
 	dAvgTestError /= count;
