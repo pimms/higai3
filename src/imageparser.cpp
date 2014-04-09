@@ -1,16 +1,20 @@
 #include "imageparser.h"
 #include <assert.h>
 
-Image ImageParser::ParseImage(const char *file)
+Image ImageParser::ParseImage(const char *file, int scalefactor)
 {
+	printf("Parsing image: %s...", file);
+
 	SDL_Surface *surface = OpenImage(file);
 
 	if (!surface) {
+		throw runtime_error("Failed to open image");
 		return Image{0, 0, NULL};
 	}
 	
-	Image img = ScaleDownSurface(surface, 1);
+	Image img = ScaleDownSurface(surface, scalefactor);
 
+	printf("ok\n");
 	return img;
 }
 
@@ -44,7 +48,9 @@ Image ImageParser::ScaleDownSurface(SDL_Surface *surface, int factor)
 			}
 
 			avg /= (factor*factor);
-			img.pixels[y*img.width + x] = (uint8)avg;
+
+			int idx = (y/factor) * img.width + (x/factor);
+			img.pixels[idx] = (uint8)avg;
 		}
 	}
 

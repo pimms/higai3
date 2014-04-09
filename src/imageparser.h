@@ -12,7 +12,7 @@ struct Image {
 
 class ImageParser {
 public:
-	Image ParseImage(const char *file);
+	Image ParseImage(const char *file, int scalefactor);
 	
 private:
 	SDL_Surface* OpenImage(const char *file);

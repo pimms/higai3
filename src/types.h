@@ -29,3 +29,25 @@ typedef vector< pair<int,int> > Topology;
 typedef vector< vector<double> > LayerWeights;
 
 typedef unsigned char uint8;
+
+
+
+struct CmdConfig 
+{
+	bool img;
+	int scalefactor;
+
+	Topology *topology;
+	double eta;
+	int maxIterations;
+	const char *trainingFile;
+
+	CmdConfig() 
+		: 	img(false),
+			scalefactor(0),
+			topology(NULL),
+			eta(0.25),
+			maxIterations(10000),
+			trainingFile(NULL)
+	{ }
+};

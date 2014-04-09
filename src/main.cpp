@@ -36,24 +36,6 @@ const char *HELP_USAGE =
 	"		Set the maximum number of iterations to trai to\n"
 	;
 
-struct CmdConfig {
-	bool img;
-	int scalefactor;
-
-	Topology *topology;
-	double eta;
-	int maxIterations;
-	const char *trainingFile;
-
-	CmdConfig() 
-		: 	img(false),
-			scalefactor(0),
-			topology(NULL),
-			eta(0.25),
-			maxIterations(10000),
-			trainingFile(NULL)
-	{ }
-};
 
 void ParseArgs(int argc, char **argv, CmdConfig *conf);
 void ParseTopology(char *str, Topology *t);
@@ -158,12 +140,19 @@ void PrintHelp()
 TrainingSet ParseTrainingData(CmdConfig *conf)
 {
 	TrainingSet tset;
+	TrainingParser parser;
 
 	if (conf->img) {
-		throw runtime_error("NOT YET IMPLEMENTED: img");
+		tset = parser.ParseImages(conf);
+
+		pair<int,int> inl, outl;
+		inl.first = (30/conf->scalefactor) * (30/conf->scalefactor);
+		outl.first = 26;
+
+		conf->topology->insert(conf->topology->begin(), inl);
+		conf->topology->push_back(outl);
 	} else {
-		TrainingParser parser(conf->trainingFile, conf->topology);
-		tset = parser.ParseText();
+		tset = parser.ParseText(conf->trainingFile, conf->topology);
 	}
 
 	return tset;

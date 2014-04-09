@@ -19,15 +19,14 @@ typedef vector<TrainingData> TrainingSet;
  */
 class TrainingParser {
 public:
-	TrainingParser(string filename, const Topology *top);
+	TrainingParser();
 	~TrainingParser();
 
-	TrainingSet ParseText();
+	TrainingSet ParseText(string filename, const Topology *top) const;
+	TrainingSet ParseImages(CmdConfig *config) const;
+
 private:
-	bool OpenFileHandle(fstream &file, bool write) const;
+	bool OpenFileHandle(string filename, fstream &file, bool write) const;
 	bool ReadLine(fstream &file, const Topology *top,
 				  vector<double> &i, vector<double> &o) const;
-	
-	string _filename;
-	const Topology *_top;
 };
