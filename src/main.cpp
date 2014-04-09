@@ -127,9 +127,6 @@ void ParseTopology(char *str, Topology *t)
 		t->push_back(pair<int,int>(n,0));
 		tok = strtok(NULL, ",");
 	}
-
-	if (t->size() < 2) 
-		throw runtime_error("Topology must be at least 2");
 }
 
 void PrintHelp()
