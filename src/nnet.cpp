@@ -196,7 +196,7 @@ void NeuralNetwork::Run(const TrainingSet &tset, int maxiter,
 			printf(" -> saving weights\n");
 			dMinTestError = dAvgTestError;
 			SaveWeights();
-		} else if (dAvgTestError > 1.2 * dMinTestError) {
+		} else if (dAvgTestError > 1.5 * dMinTestError) {
 			printf(" -> stopping training and restoring weights\n");
 			Stop = true;
 			RestoreWeights();
