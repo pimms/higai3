@@ -78,7 +78,8 @@ NeuralNetwork::NeuralNetwork(Topology topology)
 		dGain(1.0),
 		dMSE(0.0),
 		dMAE(0.0),
-		dAvgTestError(0.0)
+		dAvgTestError(0.0),
+		_topology(topology)
 {
 	/* TODO:
 	 * Consider wether we need to support bias nodes or not. Currently
@@ -138,58 +139,27 @@ NeuralNetwork::~NeuralNetwork()
 	delete[] pLayers;
 }
 
-int NeuralNetwork::Pass(const char* fname, bool train)
+int NeuralNetwork::Pass(const TrainingSet &tset, bool train)
 {
 	int count = 0;
 	int nbi   = 0;
 	int nbt   = 0;
-	double* input  = NULL;
-	double* output = NULL;
-	double* target = NULL;
-	FILE*   fp = NULL;
 
-	fp = fopen(fname,"r");
-	if(!fp) return 0;
-
-	input  = new double[pLayers[0].nNumNeurons];
-	output = new double[pLayers[nNumLayers-1].nNumNeurons];
-	target = new double[pLayers[nNumLayers-1].nNumNeurons];
-
-	if(!input) return 0;
-	if(!output) return 0;
-	if(!target) return 0;
-
+	const double *input;
+	const double *target;
+	double* output = new double[pLayers[nNumLayers-1].nNumNeurons];
 	dAvgTestError = 0.0;
 
-	while( !feof(fp) ) {
-		double dNumber;
-		if( read_number(fp,&dNumber) ) {
-			if( nbi < pLayers[0].nNumNeurons )
-				input[nbi++] = dNumber;
-			else if( nbt < pLayers[nNumLayers-1].nNumNeurons )
-				target[nbt++] = dNumber;
-
-			if( (nbi == pLayers[0].nNumNeurons) &&
-			        (nbt == pLayers[nNumLayers-1].nNumNeurons) ) {
-				Simulate(input, output, target, train);
-				dAvgTestError += dMAE;
-				nbi = 0;
-				nbt = 0;
-				count++;
-			}
-		} else {
-			break;
-		}
+	for (int i=0; i<tset.size(); i++) {
+		input = &(tset[i].input[0]);
+		target = &(tset[i].expectedOutput[0]);
+		Simulate(input, output, target, train);
+		dAvgTestError += dMAE;
+		count++;
 	}
 
 	dAvgTestError /= count;
-
-	if(fp) fclose(fp);
-
-	if(input)  delete[] input;
-	if(output) delete[] output;
-	if(target) delete[] target;
-
+	delete[] output;
 	return count;
 }
 
@@ -209,8 +179,11 @@ void NeuralNetwork::Run(const char* fname, int maxiter, ResultData *res)
 	InitializeRandoms();
 	RandomWeights();
 
+	TrainingParser parser(fname, &_topology);
+	TrainingSet tset = parser.ParseText();
+
 	do {
-		res->trainingPasses += Pass(fname, true);
+		res->trainingPasses += Pass(tset, true);
 
 		if(!res->iterations) {
 			dMinTestError = dAvgTestError;
@@ -253,7 +226,7 @@ void NeuralNetwork::RandomWeights()
 	}
 }
 
-void NeuralNetwork::SetInputSignal(double* input)
+void NeuralNetwork::SetInputSignal(const double* input)
 {
 	int i;
 	for ( i = 0; i < pLayers[0].nNumNeurons; i++ ) {
@@ -311,7 +284,7 @@ void NeuralNetwork::PropagateSignal()
 	}
 }
 
-void NeuralNetwork::ComputeOutputError(double* target)
+void NeuralNetwork::ComputeOutputError(const double* target)
 {
 	int  i;
 	dMSE = 0.0;
@@ -359,8 +332,8 @@ void NeuralNetwork::AdjustWeights()
 	}
 }
 
-void NeuralNetwork::Simulate(double* input, double* output, 
-									double* target, bool training)
+void NeuralNetwork::Simulate(const double* input, double* output, 
+							 const double* target, bool training)
 {
 
 	if(!input)  return;

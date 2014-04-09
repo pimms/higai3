@@ -13,28 +13,30 @@ TrainingParser::~TrainingParser()
 {
 }
 
-TrainingData TrainingParser::ParseText() 
+TrainingSet TrainingParser::ParseText() 
 {
+	TrainingSet returndata;
 
-	int inCount = (*_top)[0].first;
-	int outCount = (*_top)[_top->size()-1].first;
-	TrainingData returndata;
-
-	fstream filename;
-	if (!OpenFileHandle(filename, false))
-	{
+	fstream file;
+	if (!OpenFileHandle(file, false)) {
 		return returndata;
 	}
 
-	int trainingcount;
-	filename >> trainingcount;
-	
-	TrainingData data;
+	vector<double> in, target;	
+	while (ReadLine(file, _top, in, target)) {
+		TrainingData td;
+		td.input = in;
+		td.expectedOutput = target;
 
+		returndata.push_back(td);
+	}
+	
 	return returndata;
 }
 
-bool TrainingParser::OpenFileHandle(fstream &file, bool write)
+
+/* Private Methods */
+bool TrainingParser::OpenFileHandle(fstream &file, bool write) const
 {
 	std::ios::openmode mode = std::ios::in;
 
@@ -49,4 +51,35 @@ bool TrainingParser::OpenFileHandle(fstream &file, bool write)
 	}
 
 	return true;
+}
+
+bool TrainingParser::ReadLine(fstream &file, const Topology *top,
+							  vector<double> &in, 
+							  vector<double> &output) const
+{
+	int inCount = (*_top)[0].first;
+	int outCount = (*_top)[_top->size()-1].first;
+	in.clear();
+	output.clear();
+	
+	vector<double> read;
+	for (int i=0; i<inCount + outCount; i++) {
+		double d;
+		if (!(file >> d)) break;
+		read.push_back(d);
+	}
+
+	if (read.size() == inCount + outCount) {
+		for (int i=0; i<inCount; i++) {
+			in.push_back(read[i]);
+		}
+		
+		for (int i=0; i<outCount; i++) {
+			output.push_back(read[inCount+i]);
+		}
+
+		return true;
+	}
+
+	return false;
 }

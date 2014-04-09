@@ -9,21 +9,25 @@ struct TrainingData {
     vector<double> expectedOutput;
 };
 
+typedef vector<TrainingData> TrainingSet;
+
+
 /*
  * Training Parser
  * 
  * Parser for trainingdata.
  */
-
 class TrainingParser {
-	public:
-		TrainingParser(string filename, const Topology *top);
-		~TrainingParser();
+public:
+	TrainingParser(string filename, const Topology *top);
+	~TrainingParser();
 
-		TrainingData ParseText();
-	private:
-		bool OpenFileHandle(fstream &file, bool write);
-		
-		string _filename;
-		const Topology *_top;
+	TrainingSet ParseText();
+private:
+	bool OpenFileHandle(fstream &file, bool write) const;
+	bool ReadLine(fstream &file, const Topology *top,
+				  vector<double> &i, vector<double> &o) const;
+	
+	string _filename;
+	const Topology *_top;
 };

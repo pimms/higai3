@@ -15,7 +15,7 @@
 #pragma once
 
 #include "types.h"
-
+#include "trainingparser.h"
 
 struct ResultData {
 	double initialError;
@@ -42,7 +42,7 @@ public:
 	NeuralNetwork (Topology topology);
 	~NeuralNetwork ();
 	
-	int Pass (const char* fname, bool train);
+	int Pass (const TrainingSet &tset, bool train);
 	int Evaluate();
 
 	void Run(const char* fname, int maxiter, ResultData *res);
@@ -55,24 +55,26 @@ public:
 private:
 	void RandomWeights();
 
-	void SetInputSignal (double* input);
+	void SetInputSignal (const double* input);
 	void GetOutputSignal(double* output);
 
 	void SaveWeights();
 	void RestoreWeights();
 
 	void PropagateSignal();
-	void ComputeOutputError(double* target);
+	void ComputeOutputError(const double* target);
 	void BackPropagateError();
 	void AdjustWeights();
 
-	void Simulate(double* input, double* output, 
-				  double* target, bool training);
+	void Simulate(const double* input, double* output, 
+				  const double* target, bool training);
 
 	int    nNumLayers;
 	Layer* pLayers;
 
 	double dMSE; // TODO: wtf is this
 	double dMAE; // TODO: wtf is this
+
+	Topology _topology;
 };
 
