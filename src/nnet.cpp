@@ -163,12 +163,6 @@ int NeuralNetwork::Pass(const TrainingSet &tset, bool train)
 	return count;
 }
 
-int NeuralNetwork::Evaluate()
-{
-	int count = 0;
-	return count;
-}
-
 void NeuralNetwork::Run(const TrainingSet &tset, int maxiter, 
 						ResultData *res)
 {

@@ -109,7 +109,13 @@ void ParseArgs(int argc, char **argv, CmdConfig *conf)
 	}
 
 	if (conf->img && conf->scalefactor <= 0) {
-		printf("ERROR: Undefined / invalid value for scalefactor\n");
+		printf("ERROR: Undefined / invalid value for scalefactor.\n");
+		PrintHelp();
+		exit(1);
+	}
+
+	if (!conf->img && conf->topology->size() < 2) {
+		printf("ERROR: Topology must have at least 2 layers.\n");
 		PrintHelp();
 		exit(1);
 	}

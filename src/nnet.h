@@ -43,7 +43,6 @@ public:
 	~NeuralNetwork ();
 	
 	int Pass (const TrainingSet &tset, bool train);
-	int Evaluate();
 
 	void Run(const TrainingSet &tset, int maxiter, ResultData *res);
 
