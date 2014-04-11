@@ -1,7 +1,12 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#ifndef WIN32
+#	include <SDL2/SDL.h>
+#	include <SDL2/SDL_image.h>
+#else
+#	include <SDL.h>
+#	include <SDL_image.h>
+#endif
 #include "types.h"
 
 struct Image {

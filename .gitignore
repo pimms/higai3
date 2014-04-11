@@ -22,3 +22,6 @@ install_manifest.txt
 
 .*.swp
 .*.swo
+
+# Log files
+log.txt

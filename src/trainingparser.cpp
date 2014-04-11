@@ -32,8 +32,9 @@ TrainingSet TrainingParser::ParseText(string filename,
 		TrainingData td;
 		td.input = in;
 		td.expectedOutput = target;
+		td.identification = "Anonymous training data";
 
-		returndata.push_back(td);
+		returndata.data.push_back(td);
 	}
 	
 	return returndata;
@@ -64,7 +65,8 @@ TrainingSet TrainingParser::ParseImages(CmdConfig *config) const
 
 			tdata.expectedOutput.resize(26, 0.0);
 			tdata.expectedOutput[i] = 1.0;
-			tset.push_back(tdata);
+			tdata.identification = file;
+			tset.data.push_back(tdata);
 		}
 	}
 

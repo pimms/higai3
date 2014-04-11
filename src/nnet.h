@@ -17,11 +17,26 @@
 #include "types.h"
 #include "trainingparser.h"
 
+struct TrainingData;
+
+struct ItemStats {
+	void Write(ofstream &file) const;
+	ItemStats() : trainingData(NULL) {}
+
+	vector<double> initialResult;
+	vector<double> finalResult;
+	TrainingData *trainingData;
+};
+
 struct ResultData {
+	void WriteLogFile(string logfilename) const;
+	ResultData() : initialError(0), finalError(0), iterations(0), trainingPasses(0) {}
+
 	double initialError;
 	double finalError;
 	int iterations;
 	int trainingPasses;
+	vector<ItemStats> stats;
 };
 
 struct Neuron {
@@ -42,9 +57,13 @@ public:
 	NeuralNetwork (Topology topology);
 	~NeuralNetwork ();
 	
-	int Pass (const TrainingSet &tset, bool train);
+	void Run(TrainingSet &tset, int maxiter, ResultData *res);
 
-	void Run(const TrainingSet &tset, int maxiter, ResultData *res);
+	/* Perform a pass with the input set. The values of the layer will be 
+	 * stored in rdata->stats[i]. If rdata->iterations is 0, ItemStats::initialResult
+	 * will be used, ItemStats::finalResult otherwise. 
+	 */
+	void Test(TrainingSet &tset, ResultData *rdata);
 
 	double dEta;
 	double dAlpha;
@@ -52,6 +71,8 @@ public:
 	double dAvgTestError;
 
 private:
+	int Pass(TrainingSet &tset, bool train, ResultData *rdata=NULL);
+
 	void RandomWeights();
 
 	void SetInputSignal (const double* input);

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <cstring>
+#include <ctime>
 
 
 const char *HELP_USAGE = 
@@ -33,18 +34,21 @@ const char *HELP_USAGE =
 	" 	-deta <double>\n"
 	"		Set the training rate of the network\n"
 	"	-iter <int>\n"
-	"		Set the maximum number of iterations to trai to\n"
+	"		Set the maximum number of iterations to train to. Defaults to 10K.\n"
 	;
 
 
 void ParseArgs(int argc, char **argv, CmdConfig *conf);
 void ParseTopology(char *str, Topology *t);
 void PrintHelp();
+void WinGetch();
 TrainingSet ParseTrainingData(CmdConfig *conf);
 
 
 int main(int argc, char *argv[]) 
 {
+	system("cd");
+
 	try {
 		srand((unsigned)time(0));
 
@@ -59,16 +63,22 @@ int main(int argc, char *argv[])
 
 		NeuralNetwork mlp(t);
 		mlp.dEta = conf.eta;
+		
+		mlp.Test(tset, &result);
 		mlp.Run(tset, conf.maxIterations, &result);
+		mlp.Test(tset, &result);
 
 		printf("Initial error:   %g\n", result.initialError);
 		printf("Final error:     %g\n", result.finalError);
 		printf("Total passes:    %i\n", result.trainingPasses);
+		result.WriteLogFile("log.txt");
 	} catch (runtime_error err) {
-		printf("Exception caught:\n\t%s\n", err.what());
+		printf("\n\nException caught:\n\t%s\n", err.what());
+		WinGetch();
 		return 1;
 	}
 
+	WinGetch();
 	return 0;
 }
 
@@ -137,7 +147,8 @@ void ParseTopology(char *str, Topology *t)
 
 void PrintHelp()
 {
-	printf("%s", HELP_USAGE);
+	printf("%s", HELP_USAGE);\
+	WinGetch();
 }
 
 TrainingSet ParseTrainingData(CmdConfig *conf)
@@ -161,3 +172,9 @@ TrainingSet ParseTrainingData(CmdConfig *conf)
 	return tset;
 }
 
+void WinGetch()
+{
+#ifdef WIN32
+	getchar();
+#endif
+}

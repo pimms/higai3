@@ -20,6 +20,7 @@
 
 #include "nnet.h"
 
+/* Helper functions */
 void InitializeRandoms()
 {
 	srand( (unsigned)time( NULL ) );
@@ -68,8 +69,47 @@ bool read_number(FILE* fp, double* number)
 	return true;
 }
 
+/* Item Stats */
+void ItemStats::Write(ofstream &file) const
+{
+	char buf[64];
+
+	file << trainingData->identification << "\n";
+	file << "Times used for training: " << trainingData->trainingCount << "\n";
+	
+	file << "Initial output:\n";
+	for (int i = 0; i < initialResult.size(); i++) {
+		sprintf(buf, "%g", initialResult[i]);
+		file << "    [" << i << "]: ";
+		file.write(buf, strlen(buf));
+		file << "\n";
+	}
+
+	file << "Final output:\n";
+	for (int i = 0; i < finalResult.size(); i++) {
+		sprintf(buf, "%g", finalResult[i]);
+		file << "    [" << i << "]: ";
+		file.write(buf, strlen(buf));
+		file << "\n";
+	}
+
+	file << "\n";
+}
+
+/* Result Data */
+void ResultData::WriteLogFile(string logfilename) const
+{
+	ofstream file(logfilename, std::ios::out);
+	if (!file.is_open())
+		throw runtime_error("Failed to open logfile for writing: " + logfilename);
+
+	for (int i = 0; i < stats.size(); i++) {
+		stats[i].Write(file);
+	}
+}
 
 
+/* Neural Network */
 NeuralNetwork::NeuralNetwork(Topology topology)
 	:	nNumLayers(0),
 		pLayers(0),
@@ -139,48 +179,13 @@ NeuralNetwork::~NeuralNetwork()
 	delete[] pLayers;
 }
 
-int NeuralNetwork::Pass(const TrainingSet &tset, bool train)
-{
-	int count = 0;
-	int nbi   = 0;
-	int nbt   = 0;
-
-	const double *input;
-	const double *target;
-	double* output = new double[pLayers[nNumLayers-1].nNumNeurons];
-	dAvgTestError = 0.0;
-
-	for (int i=0; i<tset.size(); i++) {
-		input = &(tset[i].input[0]);
-		target = &(tset[i].expectedOutput[0]);
-		Simulate(input, output, target, train);
-		dAvgTestError += dMAE;
-		count++;
-
-		/* UNCOMMENT FOR DETAILED IN/OUT INFO
-		printf("Input:");
-		for (int j=0; j<tset[i].input.size(); j++) 
-			printf("%0.2g ", tset[i].input[j]);
-		printf("\nOutput: ");
-		for (int j=0; j<tset[i].expectedOutput.size(); j++) 
-			printf("%0.2g ", output[j]);
-		printf("\n");
-		getchar();
-		*/
-	}
-
-	dAvgTestError /= count;
-	delete[] output;
-	return count;
-}
-
-void NeuralNetwork::Run(const TrainingSet &tset, int maxiter, 
-						ResultData *res)
+void NeuralNetwork::Run(TrainingSet &tset, int maxiter, ResultData *res)
 {
 	bool   Stop = false;
 	double dMinTestError = 0.0;
 
 	res->iterations = 0;
+	res->trainingPasses = 0;
 
 	InitializeRandoms();
 	RandomWeights();
@@ -212,9 +217,53 @@ void NeuralNetwork::Run(const TrainingSet &tset, int maxiter,
 	} while ( (!Stop) && (res->iterations<maxiter) );
 }
 
+void NeuralNetwork::Test(TrainingSet &tset, ResultData *rdata)
+{
+	Pass(tset, false, rdata);
+}
+
 
 
 /* Private Methods */
+int NeuralNetwork::Pass(TrainingSet &tset, bool train, ResultData *rdata)
+{
+	int count = 0;
+	int nbi = 0;
+	int nbt = 0;
+
+	const int olayerSize = pLayers[nNumLayers - 1].nNumNeurons;
+	const double *input;
+	const double *target;
+	double* output = new double[olayerSize];
+	dAvgTestError = 0.0;
+
+	for (int i = 0; i<tset.data.size(); i++) {
+		input = &(tset.data[i].input[0]);
+		target = &(tset.data[i].expectedOutput[0]);
+		Simulate(input, output, target, train);
+		dAvgTestError += dMAE;
+		count++;
+		tset.data[i].trainingCount++;
+
+		if (rdata) {
+			if (!rdata->stats.size())
+				rdata->stats.resize(tset.data.size());
+			vector<double> *dst = (!rdata->iterations)
+									? &rdata->stats[i].initialResult
+									: &rdata->stats[i].finalResult;
+			dst->clear();
+			rdata->stats[i].trainingData = &tset.data[i];
+			for (int j = 0; j < olayerSize; j++) {
+				dst->push_back(output[j]);
+			}
+		}
+	}
+
+	dAvgTestError /= count;
+	delete[] output;
+	return count;
+}
+
 void NeuralNetwork::RandomWeights()
 {
 	int i,j,k;

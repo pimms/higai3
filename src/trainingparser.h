@@ -3,13 +3,22 @@
 #include "types.h"
 #include <fstream>
 using std::fstream;
+using std::ofstream;
 
 struct TrainingData {
+	int trainingCount;
+	string identification;
     vector<double> input;
     vector<double> expectedOutput;
+
+	TrainingData()
+		: trainingCount(0)
+	{}
 };
 
-typedef vector<TrainingData> TrainingSet;
+struct TrainingSet {
+	vector<TrainingData> data;
+};
 
 
 /*
