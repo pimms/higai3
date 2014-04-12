@@ -44,6 +44,8 @@ TrainingSet TrainingParser::ParseImages(CmdConfig *config) const
 {
 	TrainingSet tset;
 	ImageParser imgParser;
+
+	tset.samples = config->samplesPerCharacter;
 		
 	for (int i=0; i<26; i++) {
 		for (int j=0; j<20; j++) {

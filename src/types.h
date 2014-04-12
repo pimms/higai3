@@ -36,6 +36,7 @@ struct CmdConfig
 {
 	bool img;
 	int scalefactor;
+	int samplesPerCharacter;
 
 	Topology *topology;
 	double eta;
@@ -48,6 +49,7 @@ struct CmdConfig
 			topology(NULL),
 			eta(0.25),
 			maxIterations(10000),
-			trainingFile(NULL)
+			trainingFile(NULL),
+			samplesPerCharacter(20)
 	{ }
 };

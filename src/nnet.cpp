@@ -238,13 +238,17 @@ int NeuralNetwork::Pass(TrainingSet &tset, bool train, ResultData *rdata)
 	double* output = new double[olayerSize];
 	dAvgTestError = 0.0;
 
-	for (int i = 0; i<tset.data.size(); i++) {
+	const int samples = (train) ? (tset.samples) : (tset.data.size());
+
+	for (int i = 0; i<samples; i++) {
 		input = &(tset.data[i].input[0]);
 		target = &(tset.data[i].expectedOutput[0]);
 		Simulate(input, output, target, train);
 		dAvgTestError += dMAE;
 		count++;
-		tset.data[i].trainingCount++;
+
+		if (train) 
+			tset.data[i].trainingCount++;
 
 		if (rdata) {
 			if (!rdata->stats.size())

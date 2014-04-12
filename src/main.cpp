@@ -35,6 +35,9 @@ const char *HELP_USAGE =
 	"		Set the training rate of the network\n"
 	"	-iter <int>\n"
 	"		Set the maximum number of iterations to train to. Defaults to 10K.\n"
+	"	-samples <int>\n"
+	"		Set the number of images to train with per character. Defaults to 20.\n"
+	"		All images will however be tested against.\n"
 	;
 
 
@@ -99,6 +102,8 @@ void ParseArgs(int argc, char **argv, CmdConfig *conf)
 			conf->maxIterations = atoi(argv[++i]);
 		} else if (!strcmp(argv[i], "-tfile")) {
 			conf->trainingFile = argv[++i];
+		} else if (!strcmp(argv[i], "-samples")) {
+			conf->samplesPerCharacter = atoi(argv[++i]);
 		} else {
 			if (strcmp(argv[i], "-h")) {
 				printf("Unknown argument: \"%s\"\n", argv[i]);
@@ -126,6 +131,12 @@ void ParseArgs(int argc, char **argv, CmdConfig *conf)
 
 	if (!conf->img && conf->topology->size() < 2) {
 		printf("ERROR: Topology must have at least 2 layers.\n");
+		PrintHelp();
+		exit(1);
+	}
+
+	if (conf->samplesPerCharacter < 1 || conf->samplesPerCharacter > 20) {
+		printf("ERROR: Samples cannot exceed 20 and must be at least 1.\n");
 		PrintHelp();
 		exit(1);
 	}

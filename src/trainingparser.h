@@ -18,6 +18,9 @@ struct TrainingData {
 
 struct TrainingSet {
 	vector<TrainingData> data;
+	int samples;
+
+	TrainingSet() : samples(20) {}
 };
 
 
