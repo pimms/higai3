@@ -9,7 +9,8 @@
  *
  * Note  : The file has been heavily modified from it's original
  * 		   state to fit our specific requirements, both functional
- * 		   and style of code.
+ * 		   and style of code. The core functionality is still the work
+ * 		   of the original author.
  *********************************************************************/
 
 #pragma once
