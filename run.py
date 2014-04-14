@@ -13,8 +13,7 @@ for i in xrange(1,20):
 etas = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55 ,0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
 iters = [100, 1000, 5000, 10000]
 scalefactors = [1, 2, 3, 5, 6, 10]
-letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
-diff = [0]
+diff = [0, 0]
 
 os.system("rm all_log.txt")
 
@@ -24,17 +23,30 @@ outfile.close()
 
 def parselogfile(top, eta, ite, sample, scalefactor):
 	print "\nParsing file log.txt...\n"
-	infile = open("log.txt")
-	outfile = open("all_log.txt", "a")
-	high = 0.0;
-	low = 1.0;
+	usedhigh = 0.0;
+	usedlow = 1.0;
+	unusedhigh = 0.0
+	unusedlow = 1.0
 	differences = []
-	largestdiff = 0
+	udifferences = []
+	sam = sample
+	sam2 = sample
+
+	largediff = 0
 	leastdiff = 1
+	ulargediff = 0
+	uleastdiff = 1
+
 	final = False
-	curletter = letters[0]
+	curletter = "A"
+
 	largeimage = 0
 	leastimage = 0
+	ulargeimage = 0
+	uleastimage = 0
+
+	infile = open("log.txt")
+	outfile = open("all_log.txt", "a")
 
 	outfile.write("------------------\n")
 	outfile.write("\nTopology: " + str(top) + "\n")
@@ -49,26 +61,41 @@ def parselogfile(top, eta, ite, sample, scalefactor):
 			if line[4] != curletter:
 				curletter = line[4]
 				outfile.write("Character: " + curletter + "\n")
+				sam = sample
+				sam2 = sample
 			final = False
 		elif "Final" in line:
 			final = True
 		elif "[" in line and final:
-			if high < float(line[9:].strip()):
-				high = float(line[9:].strip())
-			if low > float(line[9:].strip()):
-				low = float(line[9:].strip())
+			if sam != 0:
+				if usedhigh < float(line[9:].strip()):
+					usedhigh = float(line[9:].strip())
+				if usedlow > float(line[9:].strip()):
+					usedlow = float(line[9:].strip())
+				sam -= 1
+			else:
+				if unusedhigh < float(line[9:].strip()):
+					unusedhigh = float(line[9:].strip())
+				if unusedlow > float(line[9:].strip()):
+					unusedlow = float(line[9:].strip())
 		elif not line.strip():
-			diff[0] = high - low
-			differences.append(diff[0])
-			if len(differences) == 20:
+			avg = 0
+			uavg = 0
+			if sam2 != 0:
+				diff[0] = usedhigh - usedlow
+				differences.append(diff[0])
+				sam2 -= 1
+			else:
+				diff[1] = unusedhigh - unusedlow
+				udifferences.append(diff[1])
+			if len(differences) == sample:
 				total = 0
-				avg = 0
 				i = 0
 				for d in differences:
 					total += d
 					i += 1
-					if d > largestdiff:
-						largestdiff = d
+					if d > largediff:
+						largediff = d
 						largeimage = i
 					if d < leastdiff:
 						leastdiff = d
@@ -77,10 +104,21 @@ def parselogfile(top, eta, ite, sample, scalefactor):
 				avg = total / i
 				differences = []
 
+				outfile.write("Best recognized image: " + str(largeimage) + " - " + str(largediff) + "\n")
+				outfile.write("Least recognized image: " + str(leastimage) + " - " + str(leastdiff) + "\n")
 				outfile.write("Trained avg recognition rate: " + str(avg) + "\n")
-				outfile.write("Untrained avg recognition rate: ????????????\n")
-				outfile.write("Best recognized image: " + str(largeimage) + " - " + str(largestdiff) + "\n")
-				outfile.write("Least recognized image: " + str(leastimage) + " - " + str(leastdiff) + "\n\n")
+			elif len(udifferences) == (20 - sample):
+				total = 0
+				i = 0
+				for d in udifferences:
+					total += d
+					i += 1
+				
+				uavg = total / i
+				udifferences = []
+
+				outfile.write("Untrained avg recognition rate: " + str(uavg) + "\n\n")
+
 
 	infile.close()
 	outfile.close()
