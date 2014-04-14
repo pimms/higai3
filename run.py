@@ -79,7 +79,7 @@ def parselogfile(top, eta, ite, sample, scalefactor):
 
 				outfile.write("Trained avg recognition rate: " + str(avg) + "\n")
 				outfile.write("Untrained avg recognition rate: ????????????\n")
-				outfile.write("Most recognized image: " + str(largeimage) + " - " + str(largestdiff) + "\n")
+				outfile.write("Best recognized image: " + str(largeimage) + " - " + str(largestdiff) + "\n")
 				outfile.write("Least recognized image: " + str(leastimage) + " - " + str(leastdiff) + "\n\n")
 
 	infile.close()
