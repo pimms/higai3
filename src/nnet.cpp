@@ -77,6 +77,10 @@ void ItemStats::Write(ofstream &file) const
 {
 	char buf[64];
 
+	char character;
+	double certainty;
+	Recognize(character, certainty);
+
 	file << trainingData->identification << "\n";
 	file << "Times used for training: " << trainingData->trainingCount << "\n";
 	
@@ -88,7 +92,8 @@ void ItemStats::Write(ofstream &file) const
 		file << "\n";
 	}
 
-	file << "Final output:\n";
+	file<<"Final output (recognized as " <<character 
+		<<", " <<certainty  <<"):\n";
 	for (int i = 0; i < finalResult.size(); i++) {
 		sprintf(buf, "%g", finalResult[i]);
 		file << "    [" << i << "]: ";
@@ -98,6 +103,28 @@ void ItemStats::Write(ofstream &file) const
 
 	file << "\n";
 }
+
+void ItemStats::Recognize(char &ch, double &certainty) const
+{
+	int idx = -1;
+	double max = -0.1;
+	double smax = -0.2;
+
+	for (int i=0; i<finalResult.size(); i++) {
+		double d = finalResult[i];
+		if (d > max) {
+			idx = i;
+			smax = max;
+			max = d;
+		} else if (d > smax) {
+			smax = d;
+		}
+	}
+
+	ch = 'A' + idx;
+	certainty = max - smax;
+}
+
 
 /* Result Data */
 void ResultData::WriteLogFile(string logfilename) const

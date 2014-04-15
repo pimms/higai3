@@ -22,6 +22,7 @@ struct TrainingData;
 
 struct ItemStats {
 	void Write(ofstream &file) const;
+	void Recognize(char &ch, double &certainty) const;
 	ItemStats() : trainingData(NULL) {}
 
 	vector<double> initialResult;
