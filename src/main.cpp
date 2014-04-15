@@ -50,8 +50,6 @@ TrainingSet ParseTrainingData(CmdConfig *conf);
 
 int main(int argc, char *argv[]) 
 {
-	system("cd");
-
 	try {
 		srand((unsigned)time(0));
 
@@ -75,6 +73,7 @@ int main(int argc, char *argv[])
 		printf("Final error:     %g\n", result.finalError);
 		printf("Total passes:    %i\n", result.trainingPasses);
 		result.WriteLogFile("log.txt");
+		mlp.LogTopology("top.txt");
 	} catch (runtime_error err) {
 		printf("\n\nException caught:\n\t%s\n", err.what());
 		WinGetch();

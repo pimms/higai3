@@ -18,6 +18,7 @@
 #include <time.h>
 #include <math.h>
 #include <string.h>
+#include <iomanip>
 
 #include "nnet.h"
 
@@ -158,7 +159,7 @@ NeuralNetwork::NeuralNetwork(Topology topology)
 
 	}
 
-
+	RandomWeights();
 }
 
 NeuralNetwork::~NeuralNetwork()
@@ -223,6 +224,34 @@ void NeuralNetwork::Test(TrainingSet &tset, ResultData *rdata)
 	Pass(tset, false, rdata);
 }
 
+void NeuralNetwork::LogTopology(string filename) const
+{
+ 	ofstream file(filename, std::ios::out);
+	if (!file.is_open()) 
+		throw runtime_error("Failed to open file for writing: " + filename);
+
+	for (int i=1; i<nNumLayers; i++) {
+		file <<"[Layer " <<i <<"]: \n";
+		Layer *prev = &pLayers[i-1];
+		Layer *cur = &pLayers[i];
+
+		file << "      ";
+		for (int j=0; j<cur->nNumNeurons; j++) 
+			file<<"Node" <<std::setw(2) <<std::setfill('0') <<j <<"   ";
+		file << "\n";
+		
+		for (int j=0; j<prev->nNumNeurons; j++) {
+			file<<"W" <<std::setw(2) <<std::setfill('0') <<j <<":  ";
+			for (int k=0; k<cur->nNumNeurons; k++) {
+				file<<std::setw(7) <<std::setfill(' ') 
+					<<cur->pNeurons[k].w[j] <<"  ";
+			}
+			file << "\n";
+		}
+
+		file << "\n";
+	}
+}
 
 
 /* Private Methods */
@@ -248,7 +277,7 @@ int NeuralNetwork::Pass(TrainingSet &tset, bool train, ResultData *rdata)
 		count++;
 
 		if (train) 
-			tset.data[i].trainingCount++;
+		tset.data[i].trainingCount++;
 
 		if (rdata) {
 			if (!rdata->stats.size())

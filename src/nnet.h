@@ -66,6 +66,8 @@ public:
 	 */
 	void Test(TrainingSet &tset, ResultData *rdata);
 
+	void LogTopology(string filename) const;
+
 	double dEta;
 	double dAlpha;
 	double dGain;
