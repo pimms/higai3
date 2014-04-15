@@ -11,22 +11,11 @@ const char *HELP_USAGE =
 	"Usage:\n"
 	"	-h \n"
 	"		Display this message\n"
-	"	-tfile <file>\n"
-	"		Define the file containing the training data\n"
-	"		Passing this argument causes the program to load a text file\n"
-	"		containing the training data.\n"
-	"	-img [IMPLICIT BY DEFAULT]\n"
-	"		Use images\n"
 	"	-scalefactor [REQUIRED FOR -img]\n"
 	"		The factor with which to scale down parsed images. Use 1 for\n"
 	"		no change, 2 for half size, 3 for 1/3 size, etc.\n"
 	"	-top <int>,<int>...<int>\n"
 	"		Define the topology of the network.\n"
-	"		Example: -top 1,3,1\n"
-	"		\n"
-	"		When using text files (-tfile), the topology will be literally\n"
-	"		translated. When using images (-img), the -top argument only\n"
-	"		define the hidden layers. \n"
 	"		Example with scaling factor 5:\n"
 	"			-top 4,3\n"
 	"			will result in the topology:\n"
@@ -91,16 +80,12 @@ void ParseArgs(int argc, char **argv, CmdConfig *conf)
 	for (int i=1; i<argc; i++) {
 		if (!strcmp(argv[i], "-deta")) {
 			conf->eta = atof(argv[++i]);
-		} else if (!strcmp(argv[i], "-img")) {
-			conf->img = true;
 		} else if (!strcmp(argv[i], "-scalefactor")) {
 			conf->scalefactor = atoi(argv[++i]);
 		} else if (!strcmp(argv[i], "-top")) {
 			ParseTopology(argv[++i], conf->topology);
 		} else if (!strcmp(argv[i], "-iter")) {
 			conf->maxIterations = atoi(argv[++i]);
-		} else if (!strcmp(argv[i], "-tfile")) {
-			conf->trainingFile = argv[++i];
 		} else if (!strcmp(argv[i], "-samples")) {
 			conf->samplesPerCharacter = atoi(argv[++i]);
 		} else {

@@ -37,6 +37,9 @@ struct ResultData {
 	double finalError;
 	int iterations;
 	int trainingPasses;
+
+	// One ItemStats object will be created for every TestData 
+	// object.
 	vector<ItemStats> stats;
 };
 

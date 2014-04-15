@@ -19,6 +19,7 @@
 #include <math.h>
 #include <string.h>
 #include <iomanip>
+#include <assert.h>
 
 #include "nnet.h"
 
@@ -267,28 +268,33 @@ int NeuralNetwork::Pass(TrainingSet &tset, bool train, ResultData *rdata)
 	double* output = new double[olayerSize];
 	dAvgTestError = 0.0;
 
-	const int samples = (train) ? (tset.samples) : (tset.data.size());
+	const int samples = (train) ? (tset.samples) : (20);
 
-	for (int i = 0; i<samples; i++) {
-		input = &(tset.data[i].input[0]);
-		target = &(tset.data[i].expectedOutput[0]);
-		Simulate(input, output, target, train);
-		dAvgTestError += dMAE;
-		count++;
+	// Iterate over all letters (20 samples per letter)
+	for (int c=0; c<tset.data.size()/20; c++) {
+		// Iterate over all the samples
+		for (int i = 0; i<samples; i++) {
+			const int idx = c*20 + i;
+			input = &(tset.data[idx].input[0]);
+			target = &(tset.data[idx].expectedOutput[0]);
+			Simulate(input, output, target, train);
+			dAvgTestError += dMAE;
+			count++;
 
-		if (train) 
-		tset.data[i].trainingCount++;
+			if (train) 
+				tset.data[idx].trainingCount++;
 
-		if (rdata) {
-			if (!rdata->stats.size())
-				rdata->stats.resize(tset.data.size());
-			vector<double> *dst = (!rdata->iterations)
-									? &rdata->stats[i].initialResult
-									: &rdata->stats[i].finalResult;
-			dst->clear();
-			rdata->stats[i].trainingData = &tset.data[i];
-			for (int j = 0; j < olayerSize; j++) {
-				dst->push_back(output[j]);
+			if (rdata) {
+				if (!rdata->stats.size())
+					rdata->stats.resize(tset.data.size());
+				vector<double> *dst = (!rdata->iterations)
+										? &rdata->stats[idx].initialResult
+										: &rdata->stats[idx].finalResult;
+				dst->clear();
+				rdata->stats[idx].trainingData = &tset.data[idx];
+				for (int j = 0; j < olayerSize; j++) {
+					dst->push_back(output[j]);
+				}
 			}
 		}
 	}
