@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-import os
+import os, sys
 
 tops = []
 for i in xrange(12, 30):
@@ -14,6 +14,7 @@ etas = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55 ,0.6, 0.65, 0.7, 0
 iters = [100, 1000, 5000, 10000]
 scalefactors = [1, 2, 3, 5, 6, 10]
 diff = [0, 0]
+letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
 
 os.system("rm all_log.txt")
 
@@ -23,27 +24,45 @@ outfile.close()
 
 def parselogfile(top, eta, ite, sample, scalefactor):
 	print "\nParsing file log.txt...\n"
-	usedhigh = 0.0;
-	usedlow = 1.0;
-	unusedhigh = 0.0
-	unusedlow = 1.0
+
+	sam = sample
+
 	differences = []
 	udifferences = []
-	sam = sample
-	sam2 = sample
 
-	largediff = 0
-	leastdiff = 1
-	ulargediff = 0
-	uleastdiff = 1
+	trainedvalues = []
+	trainingvalues = []
 
+	trainingmostreconizedimage = -1
+	trainingleastreconizedimage = -1
+	trainedmostrecognizedimage = -1
+	trainedleastrecognizedimage = -1
+
+	trainedfinalmostrecimg = 0
+	trainedfinalleastrecimg = 0
+	trainingfinalmostrecimg = 0
+	trainingfinalleastrecimg = 0
+
+	traininglastmostrecognizedimage = 0
+	trainedlastmostrecognizedimage = 0
+	traininglastmostrecognizedvalue = 0
+	trainedlastmostrecognizedvalue = 0
+
+	traininglastleastrecognizedimage = 1
+	trainedlastleastrecognizedimage = 1
+	traininglastleastrecognizedvalue = 1
+	trainedlastleastrecognizedvalue = 1
+
+	mostrecognized = 0
+	leastrecognized = 1
+
+	avg = 0
+	uavg = 0
+
+	count = 0
 	final = False
 	curletter = "A"
-
-	largeimage = 0
-	leastimage = 0
-	ulargeimage = 0
-	uleastimage = 0
+	usedletter = True
 
 	infile = open("log.txt")
 	outfile = open("all_log.txt", "a")
@@ -58,67 +77,107 @@ def parselogfile(top, eta, ite, sample, scalefactor):
 
 	for line in infile.readlines():
 		if ".jpg" in line:
+			count += 1
+			if sam > 0:
+				usedletter = True
+				sam -= 1
+			elif sam <= 0:
+				usedletter = False
 			if line[4] != curletter:
 				curletter = line[4]
 				outfile.write("Character: " + curletter + "\n")
-				sam = sample
-				sam2 = sample
+				
 			final = False
 		elif "Final" in line:
 			final = True
 		elif "[" in line and final:
-			if sam != 0:
-				if usedhigh < float(line[9:].strip()):
-					usedhigh = float(line[9:].strip())
-				if usedlow > float(line[9:].strip()):
-					usedlow = float(line[9:].strip())
-				sam -= 1
+			if usedletter:
+				differences.append(float(line[9:].strip()))
 			else:
-				if unusedhigh < float(line[9:].strip()):
-					unusedhigh = float(line[9:].strip())
-				if unusedlow > float(line[9:].strip()):
-					unusedlow = float(line[9:].strip())
+				udifferences.append(float(line[9:].strip()))
 		elif not line.strip():
-			avg = 0
-			uavg = 0
-			if sam2 != 0:
-				diff[0] = usedhigh - usedlow
-				differences.append(diff[0])
-				sam2 -= 1
+			
+			if usedletter:
+				if len(differences) == 26:
+					i = -1
+					for d in differences:
+						i += 1
+						if d > mostrecognized:
+							mostrecognized = d
+							trainingmostreconizedimage = i
+						if d < leastrecognized:
+							leastrecognized = d
+							trainingleastreconizedimage = i
+
+					trainingvalues.append(mostrecognized)
+					if mostrecognized > traininglastmostrecognizedvalue:
+						traininglastmostrecognizedvalue = mostrecognized
+						traininglastmostrecognizedimage = count
+						trainingfinalmostrecimg = trainingmostreconizedimage
+					if leastrecognized < traininglastleastrecognizedvalue:
+						traininglastleastrecognizedvalue = leastrecognized
+						traininglastleastrecognizedimage = count
+						trainingfinalleastrecimg = trainingleastreconizedimage
+
+					differences = []
 			else:
-				diff[1] = unusedhigh - unusedlow
-				udifferences.append(diff[1])
-			if len(differences) == sample:
-				total = 0
-				i = 0
-				for d in differences:
-					total += d
-					i += 1
-					if d > largediff:
-						largediff = d
-						largeimage = i
-					if d < leastdiff:
-						leastdiff = d
-						leastimage = i
+				if len(udifferences) == 26:
+					mostrecognized = 0
+					i = -1
+					for d in udifferences:
+						i += 1
+						if d > mostrecognized:
+							mostrecognized = d
+							trainedmostrecognizedimage = i
+						if d < leastrecognized:
+							leastrecognized = d
+							trainedleastrecognizedimage = i
 
-				avg = total / i
-				differences = []
-
-				outfile.write("Best recognized image: " + str(largeimage) + " - " + str(largediff) + "\n")
-				outfile.write("Least recognized image: " + str(leastimage) + " - " + str(leastdiff) + "\n")
-				outfile.write("Trained avg recognition rate: " + str(avg) + "\n")
-			elif len(udifferences) == (20 - sample):
-				total = 0
-				i = 0
-				for d in udifferences:
-					total += d
-					i += 1
+					trainedvalues.append(mostrecognized)
+					if mostrecognized > trainedlastmostrecognizedvalue:
+						trainedlastmostrecognizedvalue = mostrecognized
+						trainedlastmostrecognizedimage = count
+						trainedfinalmostrecimg = trainedmostrecognizedimage
+					if leastrecognized < trainedlastleastrecognizedvalue:
+						trainedlastleastrecognizedvalue = leastrecognized
+						trainedlastleastrecognizedimage = count
+						trainedfinalleastrecimg = trainedleastrecognizedimage
 				
-				uavg = total / i
-				udifferences = []
+					udifferences = []
 
+			if count == 20:
+				cur = 0
+				allval = 0
+				for value in trainingvalues:
+					cur += 1
+					allval += value
+				avg = allval / cur
+
+				cur = 0
+				allval = 0
+				for value in trainedvalues:
+					cur += 1
+					allval += value
+				uavg = allval / cur
+
+				outfile.write("Best recognized image during training: " + str(traininglastmostrecognizedimage) + " | " + str(traininglastmostrecognizedvalue) + " = " + letters[trainingfinalmostrecimg] + "\n")
+				outfile.write("Best reconized image after training: " + str(trainedlastmostrecognizedimage) + " | " + str(trainedlastmostrecognizedvalue) + " = " + letters[trainedfinalmostrecimg] + "\n")
+				outfile.write("Least recognized image during training: " + str(traininglastleastrecognizedimage) + " | " + str(traininglastleastrecognizedvalue) + " = "  + letters[trainingfinalleastrecimg] + "\n")
+				outfile.write("Least recognized image after training: " + str(trainedlastleastrecognizedimage) + " | " + str(trainedlastleastrecognizedvalue) + " = "  + letters[trainedfinalleastrecimg] + "\n")
+				outfile.write("Trained avg recognition rate: " + str(avg) + "\n")
 				outfile.write("Untrained avg recognition rate: " + str(uavg) + "\n\n")
 
+				avg = 0
+				uavg = 0
+				count = 0
+				sam = sample
+				leastrecognized = 1
+				mostrecognized = 0
+
+				traininglastleastrecognizedvalue = 1
+				trainedlastleastrecognizedvalue = 1
+				traininglastmostrecognizedvalue = 0
+				trainedlastmostrecognizedvalue = 0
 
 	infile.close()
 	outfile.close()
