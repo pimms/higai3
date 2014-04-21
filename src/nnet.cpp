@@ -196,14 +196,10 @@ void NeuralNetwork::Run(TrainingSet &tset, int maxiter, ResultData *res)
 		res->finalError = dAvgTestError;
 		printf( "%i \t TestError: %f", res->iterations, dAvgTestError);
 
-		if ( dAvgTestError < dMinTestError) {
+		if (dAvgTestError < dMinTestError) {
 			printf(" -> saving weights\n");
 			dMinTestError = dAvgTestError;
 			SaveWeights();
-		} else if (dAvgTestError > 1.5 * dMinTestError) {
-			printf(" -> stopping training and restoring weights\n");
-			Stop = true;
-			RestoreWeights();
 		} else {
 			printf(" -> ok\n");
 		}
@@ -444,7 +440,7 @@ void NeuralNetwork::PropagateSignal()
 			if (isnan(denom) || denom == 0.0)
 				denom = 0.0000000001;
 
-			pLayers[i].pNeurons[j].x = 1.0 / (1.0 + exp(-dGain * sum));
+			pLayers[i].pNeurons[j].x = 1.0 / denom;
 		}
 	}
 }
