@@ -29,9 +29,6 @@ const char *HELP_USAGE =
 	"	-samples <int>\n"
 	"		Set the number of images to train with per character. Defaults to 20.\n"
 	"		All images will however be tested against.\n"
-	"	-w <file>\n"
-	"		Load the topology from the file. Post-training, the topology will\n"
-	"		still be written to \"top.txt\".\n"
 	;
 
 

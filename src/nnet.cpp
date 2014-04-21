@@ -20,6 +20,7 @@
 #include <string.h>
 #include <iomanip>
 #include <assert.h>
+#include <cmath>
 
 #include "nnet.h"
 
@@ -439,6 +440,10 @@ void NeuralNetwork::PropagateSignal()
 				sum += w * out;
 			}
 
+			double denom = 1.0 + exp(-dGain * sum);
+			if (isnan(denom) || denom == 0.0)
+				denom = 0.0000000001;
+
 			pLayers[i].pNeurons[j].x = 1.0 / (1.0 + exp(-dGain * sum));
 		}
 	}
@@ -453,8 +458,13 @@ void NeuralNetwork::ComputeOutputError(const double* target)
 		double x = pLayers[nNumLayers-1].pNeurons[i].x;
 		double d = target[i] - x;
 		pLayers[nNumLayers-1].pNeurons[i].e = dGain * x * (1.0 - x) * d;
+
 		dMSE += (d * d);
 		dMAE += fabs(d);
+
+		if (isnan(dMAE) || isnan(dMSE)) {
+			printf("NANANANANANANANANANAN BATMAN\n");
+		}
 	}
 
 	dMSE /= (double)pLayers[nNumLayers-1].nNumNeurons;
