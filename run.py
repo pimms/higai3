@@ -2,17 +2,13 @@
 
 import os, sys
 
-tops = []
-for i in xrange(12, 30):
-	tops.append(i)
 
-samples = []
-for i in xrange(1,20):
-	samples.append(i)
-
-etas = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55 ,0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
-iters = [100, 1000, 5000, 10000]
-scalefactors = [1, 2, 3, 5, 6, 10]
+# Go freakin' nuts
+tops = ["30", "40", "30,30", "40,40"]
+samples = [5, 10]
+etas = [0.25]
+iters = [1000]
+scalefactors = [5]
 diff = [0, 0]
 letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
 
@@ -188,6 +184,8 @@ for top in tops:
 		for ite in iters:
 			for sample in samples:
 				for scalefactor in scalefactors:
-					output = "-top " + str(top) + " -deta " + str(eta) + " -iter " + str(ite) + " -samples " + str(sample) + " -scalefactor " + str(scalefactor)
-					os.system('./ann %s' % output)
+					args = "-top " + str(top) + " -deta " + str(eta) + " -iter " + str(ite) + " -samples " + str(sample) + " -scalefactor " + str(scalefactor)
+					cmd = './ann %s' % args
+					print "Running command: " + cmd
+					os.system(cmd)
 					parselogfile(top, eta, ite, sample, scalefactor)
