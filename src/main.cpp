@@ -5,6 +5,7 @@
 #include <string.h>
 #include <cstring>
 #include <ctime>
+#include <math.h>
 
 
 const char *HELP_USAGE = 
@@ -28,11 +29,15 @@ const char *HELP_USAGE =
 	"	-samples <int>\n"
 	"		Set the number of images to train with per character. Defaults to 20.\n"
 	"		All images will however be tested against.\n"
+	"	-w <file>\n"
+	"		Load the topology from the file. Post-training, the topology will\n"
+	"		still be written to \"top.txt\".\n"
 	;
 
 
 void ParseArgs(int argc, char **argv, CmdConfig *conf);
 void ParseTopology(char *str, Topology *t);
+int GetScaleFactor(const char *weightsFile);
 void PrintHelp();
 void WinGetch();
 TrainingSet ParseTrainingData(CmdConfig *conf);
@@ -52,18 +57,26 @@ int main(int argc, char *argv[])
 
 		TrainingSet tset = ParseTrainingData(&conf);
 
-		NeuralNetwork mlp(t);
-		mlp.dEta = conf.eta;
-		
-		mlp.Test(tset, &result);
-		mlp.Run(tset, conf.maxIterations, &result);
-		mlp.Test(tset, &result);
+		NeuralNetwork *network = NULL;
+		if (conf.weightsFile)
+			network = new NeuralNetwork(conf.weightsFile);
+		else
+			network = new NeuralNetwork(*conf.topology);
 
-		printf("Initial error:   %g\n", result.initialError);
-		printf("Final error:     %g\n", result.finalError);
-		printf("Total passes:    %i\n", result.trainingPasses);
+		network->dEta = conf.eta;
+		
+		network->Test(tset, &result);
+		network->Run(tset, conf.maxIterations, &result);
+		network->Test(tset, &result);
+
+		if (result.iterations) {
+			printf("Initial error:   %g\n", result.initialError);
+			printf("Final error:     %g\n", result.finalError);
+			printf("Total passes:    %i\n", result.trainingPasses);
+		}
+
 		result.WriteLogFile("log.txt");
-		mlp.LogTopology("top.txt");
+		network->LogTopology("top.txt");
 	} catch (runtime_error err) {
 		printf("\n\nException caught:\n\t%s\n", err.what());
 		WinGetch();
@@ -78,17 +91,24 @@ int main(int argc, char *argv[])
 
 void ParseArgs(int argc, char **argv, CmdConfig *conf)
 {
+	bool topDefined = false;
+	bool scaleDefined = false;
+
 	for (int i=1; i<argc; i++) {
 		if (!strcmp(argv[i], "-deta")) {
 			conf->eta = atof(argv[++i]);
 		} else if (!strcmp(argv[i], "-scalefactor")) {
 			conf->scalefactor = atoi(argv[++i]);
+			scaleDefined = true;
 		} else if (!strcmp(argv[i], "-top")) {
 			ParseTopology(argv[++i], conf->topology);
+			topDefined = true;
 		} else if (!strcmp(argv[i], "-iter")) {
 			conf->maxIterations = atoi(argv[++i]);
 		} else if (!strcmp(argv[i], "-samples")) {
 			conf->samplesPerCharacter = atoi(argv[++i]);
+		} else if (!strcmp(argv[i], "-w")) {
+			conf->weightsFile = argv[++i];
 		} else {
 			if (strcmp(argv[i], "-h")) {
 				printf("Unknown argument: \"%s\"\n", argv[i]);
@@ -98,23 +118,25 @@ void ParseArgs(int argc, char **argv, CmdConfig *conf)
 		}
 	}
 
-	if (conf->img && conf->trainingFile) {
-		printf("ERROR: Both -img and -tfile defined.\n");
+	if (topDefined && conf->weightsFile) {
+		printf("ERROR: Both -top and -w defined. They are exclusive.\n");
 		PrintHelp();
 		exit(1);
 	}
 
-	if (!conf->trainingFile) {
-		conf->img = true;
-	}
-
-	if (conf->img && conf->scalefactor <= 0) {
+	if (conf->img && conf->scalefactor <= 0 && !conf->weightsFile) {
 		printf("ERROR: Undefined / invalid value for scalefactor.\n");
 		PrintHelp();
 		exit(1);
 	}
 
-	if (!conf->img && conf->topology->size() < 2) {
+	if (conf->img && scaleDefined && conf->weightsFile) {
+		printf("ERROR: Both scale and weightsfile is defined.\n");
+		PrintHelp();
+		exit(1);
+	}
+
+	if (!conf->img && conf->topology->size() < 2 && !conf->weightsFile) {
 		printf("ERROR: Topology must have at least 2 layers.\n");
 		PrintHelp();
 		exit(1);
@@ -124,6 +146,10 @@ void ParseArgs(int argc, char **argv, CmdConfig *conf)
 		printf("ERROR: Samples cannot exceed 20 and must be at least 1.\n");
 		PrintHelp();
 		exit(1);
+	}
+
+	if (conf->weightsFile) {
+		conf->scalefactor = GetScaleFactor(conf->weightsFile);
 	}
 }
 
@@ -139,6 +165,22 @@ void ParseTopology(char *str, Topology *t)
 		t->push_back(pair<int,int>(n,0));
 		tok = strtok(NULL, ",");
 	}
+}
+
+int GetScaleFactor(const char *weightsfile)
+{
+	ifstream file(weightsfile);
+	if (!file.is_open()) {
+		printf("ERROR: Could not open weightsfile for reading\n");
+		exit(1);
+	}
+
+	int layers, nodes;
+	file >> layers >> nodes;
+
+	// Round the squareroot to int
+	double s = sqrt(nodes);
+	return (int)s + 0.5;
 }
 
 void PrintHelp()
@@ -162,7 +204,7 @@ TrainingSet ParseTrainingData(CmdConfig *conf)
 		conf->topology->insert(conf->topology->begin(), inl);
 		conf->topology->push_back(outl);
 	} else {
-		tset = parser.ParseText(conf->trainingFile, conf->topology);
+		throw runtime_error("conf->img should NEVER be false.");
 	}
 
 	return tset;

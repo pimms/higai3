@@ -41,15 +41,15 @@ struct CmdConfig
 	Topology *topology;
 	double eta;
 	int maxIterations;
-	const char *trainingFile;
+	const char *weightsFile;
 
 	CmdConfig() 
-		: 	img(false),
+		: 	img(true),
 			scalefactor(0),
 			topology(NULL),
 			eta(0.25),
 			maxIterations(10000),
-			trainingFile(NULL),
+			weightsFile(NULL),
 			samplesPerCharacter(20)
 	{ }
 };

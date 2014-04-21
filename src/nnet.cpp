@@ -151,12 +151,128 @@ NeuralNetwork::NeuralNetwork(Topology topology)
 		dAvgTestError(0.0),
 		_topology(topology)
 {
-	/* TODO:
-	 * Consider wether we need to support bias nodes or not. Currently
-	 * bias nodes are not supported, but the number of bias nodes to
-	 * include in each layer can be found in topology[x].second.
-	 */
+	SetTopology(topology);
+
+	InitializeRandoms();
+	RandomWeights();
+}
+
+NeuralNetwork::NeuralNetwork(string weightsfile)
+	:	nNumLayers(0),
+		pLayers(0),
+		dEta(0.25),
+		dAlpha(0.9),
+		dGain(1.0),
+		dMSE(0.0),
+		dMAE(0.0),
+		dAvgTestError(0.0)
+{
+	LoadTopology(weightsfile);
+}
+
+NeuralNetwork::~NeuralNetwork()
+{
+	DeleteLayers();
+}
+
+void NeuralNetwork::Run(TrainingSet &tset, int maxiter, ResultData *res)
+{
+	bool   Stop = !maxiter;
+	double dMinTestError = 0.0;
+
+	res->iterations = 0;
+	res->trainingPasses = 0;
+
+	while ( (!Stop) && (res->iterations<maxiter) ) {
+		res->trainingPasses += Pass(tset, true);
+
+		if(!res->iterations) {
+			dMinTestError = dAvgTestError;
+			res->initialError = dAvgTestError;
+		}
+
+		res->iterations++;
+		res->finalError = dAvgTestError;
+		printf( "%i \t TestError: %f", res->iterations, dAvgTestError);
+
+		if ( dAvgTestError < dMinTestError) {
+			printf(" -> saving weights\n");
+			dMinTestError = dAvgTestError;
+			SaveWeights();
+		} else if (dAvgTestError > 1.5 * dMinTestError) {
+			printf(" -> stopping training and restoring weights\n");
+			Stop = true;
+			RestoreWeights();
+		} else {
+			printf(" -> ok\n");
+		}
+	} 
+}
+
+void NeuralNetwork::Test(TrainingSet &tset, ResultData *rdata)
+{
+	Pass(tset, false, rdata);
+}
+
+
+void NeuralNetwork::LogTopology(string filename) const
+{
+ 	ofstream file(filename, std::ios::out);
+	if (!file.is_open()) 
+		throw runtime_error("Failed to open file for writing: " + filename);
+
+	file << nNumLayers <<" ";
+	for (int i=0; i<nNumLayers; i++) 
+		file << pLayers[i].nNumNeurons << " ";
+	file << "\n";
+
+	for (int i=1; i<nNumLayers; i++) {
+		Layer *prev = &pLayers[i-1];
+		Layer *cur = &pLayers[i];
+
+		for (int j=0; j<prev->nNumNeurons; j++) {
+			for (int k=0; k<cur->nNumNeurons; k++) 
+				file <<cur->pNeurons[k].w[j] <<"  ";
+			file << "\n";
+		}
+
+		file << "\n";
+	}
+}
+
+
+/* Private Methods */
+void NeuralNetwork::LoadTopology(string filename) 
+{
+	ifstream file(filename);
+	if (!file.is_open())
+		throw runtime_error("Failed to open file for reading: " + filename);
+
+	Topology top;
+	int layers, nodes;
+	file >> layers;
+	for (int i=0; i<layers; i++) {
+		file >> nodes;
+		top.push_back(pair<int,int>(nodes, 0));
+	}
+
+	SetTopology(top);
+
+	for (int i=1; i<=nNumLayers; i++) {
+		Layer *prev = &pLayers[i-1];
+		Layer *cur = &pLayers[i];
+		for (int j=0; j<prev->nNumNeurons; j++) {
+			for (int k=0; k<cur->nNumNeurons; k++) {
+				file >> cur->pNeurons[k].w[j];
+			}
+		}
+	}
+}
+
+void NeuralNetwork::SetTopology(Topology topology)
+{
 	int i,j;
+	_topology = topology;
 
 	nNumLayers = topology.size();
 	pLayers    = new Layer[nNumLayers];
@@ -184,13 +300,10 @@ NeuralNetwork::NeuralNetwork(Topology topology)
 				pLayers[i].pNeurons[j].wsave = NULL;
 			}
 		}
-
 	}
-
-	RandomWeights();
 }
 
-NeuralNetwork::~NeuralNetwork()
+void NeuralNetwork::DeleteLayers()
 {
 	int i,j;
 	for( i = 0; i < nNumLayers; i++ ) {
@@ -207,82 +320,10 @@ NeuralNetwork::~NeuralNetwork()
 		delete[] pLayers[i].pNeurons;
 	}
 	delete[] pLayers;
-}
-
-void NeuralNetwork::Run(TrainingSet &tset, int maxiter, ResultData *res)
-{
-	bool   Stop = false;
-	double dMinTestError = 0.0;
-
-	res->iterations = 0;
-	res->trainingPasses = 0;
-
-	InitializeRandoms();
-	RandomWeights();
-
-	do {
-		res->trainingPasses += Pass(tset, true);
-
-		if(!res->iterations) {
-			dMinTestError = dAvgTestError;
-			res->initialError = dAvgTestError;
-		}
-
-		res->iterations++;
-		res->finalError = dAvgTestError;
-		printf( "%i \t TestError: %f", res->iterations, dAvgTestError);
-
-		if ( dAvgTestError < dMinTestError) {
-			printf(" -> saving weights\n");
-			dMinTestError = dAvgTestError;
-			SaveWeights();
-		} else if (dAvgTestError > 1.5 * dMinTestError) {
-			printf(" -> stopping training and restoring weights\n");
-			Stop = true;
-			RestoreWeights();
-		} else {
-			printf(" -> ok\n");
-		}
-
-	} while ( (!Stop) && (res->iterations<maxiter) );
-}
-
-void NeuralNetwork::Test(TrainingSet &tset, ResultData *rdata)
-{
-	Pass(tset, false, rdata);
-}
-
-void NeuralNetwork::LogTopology(string filename) const
-{
- 	ofstream file(filename, std::ios::out);
-	if (!file.is_open()) 
-		throw runtime_error("Failed to open file for writing: " + filename);
-
-	for (int i=1; i<nNumLayers; i++) {
-		file <<"[Layer " <<i <<"]: \n";
-		Layer *prev = &pLayers[i-1];
-		Layer *cur = &pLayers[i];
-
-		file << "      ";
-		for (int j=0; j<cur->nNumNeurons; j++) 
-			file<<"Node" <<std::setw(2) <<std::setfill('0') <<j <<"   ";
-		file << "\n";
-		
-		for (int j=0; j<prev->nNumNeurons; j++) {
-			file<<"W" <<std::setw(2) <<std::setfill('0') <<j <<":  ";
-			for (int k=0; k<cur->nNumNeurons; k++) {
-				file<<std::setw(7) <<std::setfill(' ') 
-					<<cur->pNeurons[k].w[j] <<"  ";
-			}
-			file << "\n";
-		}
-
-		file << "\n";
-	}
+	nNumLayers = 0;
 }
 
 
-/* Private Methods */
 int NeuralNetwork::Pass(TrainingSet &tset, bool train, ResultData *rdata)
 {
 	int count = 0;
@@ -463,11 +504,6 @@ void NeuralNetwork::Simulate(const double* input, double* output,
 	if(output) GetOutputSignal(output);
 
 	ComputeOutputError(target);
-
-	if (training) {
-	//	printf("test: %.2f %.2f %.2f = %.2f\n", 
-	//		   input[0],input[1],target[0],output[0]);
-	}
 
 	if (training) {
 		BackPropagateError();

@@ -60,6 +60,7 @@ struct Layer {
 class NeuralNetwork {
 public:
 	NeuralNetwork (Topology topology);
+	NeuralNetwork (string weightsFile);
 	~NeuralNetwork ();
 	
 	void Run(TrainingSet &tset, int maxiter, ResultData *res);
@@ -78,6 +79,10 @@ public:
 	double dAvgTestError;
 
 private:
+	void LoadTopology(string filename);
+	void SetTopology(Topology top);
+	void DeleteLayers();
+
 	int Pass(TrainingSet &tset, bool train, ResultData *rdata=NULL);
 
 	void RandomWeights();
@@ -99,8 +104,8 @@ private:
 	int    nNumLayers;
 	Layer* pLayers;
 
-	double dMSE; // TODO: wtf is this
-	double dMAE; // TODO: wtf is this
+	double dMSE;
+	double dMAE;
 
 	Topology _topology;
 };

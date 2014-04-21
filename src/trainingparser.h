@@ -4,6 +4,7 @@
 #include <fstream>
 using std::fstream;
 using std::ofstream;
+using std::ifstream;
 
 struct TrainingData {
 	int trainingCount;
