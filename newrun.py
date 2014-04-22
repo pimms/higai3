@@ -66,6 +66,13 @@ class Letter(object):
 				recons += 1
 		return (float(recons) / float(count))
 
+	def writeInfo(self, filehandle):
+		filehandle.write("%s: %s%% \t " % (self.letter, str(self.successRate()*100)))
+		for img in self.images:
+			filehandle.write(img.recognizedAs)
+		filehandle.write("\n")
+
+
 # Contains the letter results and the configuration
 class Execution(object):
 	def __init__(self, filehandle, top, eta, ite, sample, scalefactor):
@@ -99,6 +106,19 @@ class Execution(object):
 		print "Samples:     %s" % self.samples
 		print "Scalefactor: %s" % self.scalefactor
 
+	def writeInfo(self, filehandle):
+		filehandle.write("-----------------\n")
+		filehandle.write("Successrate: %s\n" % str(self.successRate()))
+		filehandle.write("Topology:    %s\n" % self.strTop())
+		filehandle.write("Iterations:  %s\n" % self.iters)
+		filehandle.write("Samples:     %s\n" % self.samples)
+		filehandle.write("Scalefactor: %s\n" % self.scalefactor)
+
+		# Write information about the letters
+		for ltr in self.letters:
+			ltr.writeInfo(filehandle)
+
+
 
 def parselogfile(top, eta, ite, sample, scalefactor):
 	filehandle = open("log.txt", "r")
@@ -123,7 +143,8 @@ for top in tops:
 						cmd = './ann %s > /dev/null' % args
 
 						print "Running command: " + cmd
-						ret = os.system(cmd)
+						#ret = os.system(cmd)
+						ret = 0
 						if ret == 0:
 							ex = parselogfile(top, eta, ite, sample, scalefactor)
 							print "Successrate: " + str(ex.successRate()*100) + "%"
@@ -137,3 +158,8 @@ executions.sort(key=lambda x: x.successRate(), reverse=True)
 for e in executions:
 	e.printInfo()
 	print "----------"
+
+# Write DETAILED information to "all_log.txt"
+filehandle = open("all_log.txt", "w")
+for e in executions:
+	e.writeInfo(filehandle)
