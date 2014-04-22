@@ -5,7 +5,7 @@ import sys
 
 
 tops = ["30", "36", "30,30", "36,36", "36,30"]
-samples = [10, 20]
+samples = [10]
 etas = [0.25, 0.5]
 iters = [1000]
 scalefactors = [5]
@@ -68,7 +68,6 @@ class Letter(object):
 
 # Contains the letter results and the configuration
 class Execution(object):
-	# There is always room for more parameters :-)
 	def __init__(self, filehandle, top, eta, ite, sample, scalefactor):
 		self.topology = top
 		self.eta = eta
@@ -115,19 +114,23 @@ for top in tops:
 		for ite in iters:
 			for sample in samples:
 				for scalefactor in scalefactors:
-					args = "-top " + str(top) 
-					args += " -deta " + str(eta) 
-					args += " -iter " + str(ite) 
-					args += " -samples " + str(sample) 
-					args += " -scalefactor " + str(scalefactor)
-					cmd = './ann %s > /dev/null' % args
+					for i in range(0,10):
+						args = "-top " + str(top) 
+						args += " -deta " + str(eta) 
+						args += " -iter " + str(ite) 
+						args += " -samples " + str(sample) 
+						args += " -scalefactor " + str(scalefactor)
+						cmd = './ann %s > /dev/null' % args
 
-					print "Running command: " + cmd
-					os.system(cmd)
+						print "Running command: " + cmd
+						ret = os.system(cmd)
+						if ret == 0:
+							ex = parselogfile(top, eta, ite, sample, scalefactor)
+							print "Successrate: " + str(ex.successRate()*100) + "%"
+							executions.append(ex)
+						else:
+							print "EXECUTION ABORTED WITH STATUS %s" % str(ret)
 
-					ex = parselogfile(top, eta, ite, sample, scalefactor)
-					print "Successrate: " + str(ex.successRate()*100) + "%"
-					executions.append(ex)
 
 # Sort the executions 
 executions.sort(key=lambda x: x.successRate(), reverse=True)
