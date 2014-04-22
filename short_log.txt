@@ -1,0 +1,18 @@
+------------------
+
+Topology: 30
+Eta: 0.25
+Iterations: 100
+Samples: 10
+Scalefactor: 5
+
+Letter: A
+------------------
+
+Topology: 30
+Eta: 0.25
+Iterations: 100
+Samples: 20
+Scalefactor: 5
+
+Letter: A

@@ -5,9 +5,9 @@ import os, sys
 
 # Go freakin' nuts
 tops = ["30", "40", "30,30", "40,40"]
-samples = [5, 10]
+samples = [10, 20]
 etas = [0.25]
-iters = [1000]
+iters = [100]
 scalefactors = [5]
 diff = [0, 0]
 letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
@@ -62,14 +62,17 @@ def parselogfile(top, eta, ite, sample, scalefactor):
 
 	infile = open("log.txt")
 	outfile = open("all_log.txt", "a")
+	shortfile = open("short_log.txt", "a")
 
-	outfile.write("------------------\n")
-	outfile.write("\nTopology: " + str(top) + "\n")
-	outfile.write("Eta: " + str(eta) + "\n")
-	outfile.write("Iterations: " + str(ite) + "\n")
-	outfile.write("Samples: " + str(sample) + "\n")
-	outfile.write("Scalefactor: " + str(scalefactor) + "\n\n")
-	outfile.write("Letter: " + curletter + "\n")
+	outs = [outfile, shortfile]
+	for f in outs:
+		f.write("------------------\n")
+		f.write("\nTopology: " + str(top) + "\n")
+		f.write("Eta: " + str(eta) + "\n")
+		f.write("Iterations: " + str(ite) + "\n")
+		f.write("Samples: " + str(sample) + "\n")
+		f.write("Scalefactor: " + str(scalefactor) + "\n\n")
+		f.write("Letter: " + curletter + "\n")
 
 	for line in infile.readlines():
 		if ".jpg" in line:
@@ -92,7 +95,6 @@ def parselogfile(top, eta, ite, sample, scalefactor):
 			else:
 				udifferences.append(float(line[9:].strip()))
 		elif not line.strip():
-			
 			if usedletter:
 				if len(differences) == 26:
 					i = -1
@@ -177,6 +179,7 @@ def parselogfile(top, eta, ite, sample, scalefactor):
 
 	infile.close()
 	outfile.close()
+	shortfile.close()
 
 
 for top in tops:
