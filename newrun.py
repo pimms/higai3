@@ -120,38 +120,45 @@ class Execution(object):
 
 
 
-def parselogfile(top, eta, ite, sample, scalefactor):
-	filehandle = open("log.txt", "r")
+def parselogfile(top, eta, ite, sample, scalefactor, logfile):
+	filehandle = open(logfile, "r")
 	ex = Execution(filehandle, top, eta, ite, sample, scalefactor)
 	filehandle.close()
 	return ex
 
+def runExecution():
+	for top in tops:
+		for eta in etas:
+			for ite in iters:
+				for sample in samples:
+					for scalefactor in scalefactors:
+						for i in range(0,10):
+							args = "-top " + str(top) 
+							args += " -deta " + str(eta) 
+							args += " -iter " + str(ite) 
+							args += " -samples " + str(sample) 
+							args += " -scalefactor " + str(scalefactor)
+							cmd = './ann %s > /dev/null' % args
+
+							print "Running command: " + cmd
+							ret = os.system(cmd)
+							if ret == 0:
+								ex = parselogfile(top, eta, ite, sample, scalefactor, "log.txt")
+								print "Successrate: " + str(ex.successRate()*100) + "%"
+								executions.append(ex)
+							else:
+								print "EXECUTION ABORTED WITH STATUS %s" % str(ret)
+
 
 executions = []
 
-for top in tops:
-	for eta in etas:
-		for ite in iters:
-			for sample in samples:
-				for scalefactor in scalefactors:
-					for i in range(0,10):
-						args = "-top " + str(top) 
-						args += " -deta " + str(eta) 
-						args += " -iter " + str(ite) 
-						args += " -samples " + str(sample) 
-						args += " -scalefactor " + str(scalefactor)
-						cmd = './ann %s > /dev/null' % args
-
-						print "Running command: " + cmd
-						#ret = os.system(cmd)
-						ret = 0
-						if ret == 0:
-							ex = parselogfile(top, eta, ite, sample, scalefactor)
-							print "Successrate: " + str(ex.successRate()*100) + "%"
-							executions.append(ex)
-						else:
-							print "EXECUTION ABORTED WITH STATUS %s" % str(ret)
-
+if len(sys.argv) == 1:
+	runExecution()
+else:
+	# These numbers are RANDOM and NOT THE ACTUAL VALUES. We do 
+	# not know the initial configuration
+	ex = parselogfile("?", 0.5, 1, 1, 1, sys.argv[1])
+	executions.append(ex)
 
 # Sort the executions 
 executions.sort(key=lambda x: x.successRate(), reverse=True)
